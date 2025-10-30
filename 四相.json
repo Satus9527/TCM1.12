@@ -1,0 +1,208 @@
+{
+  "name": "中药配伍关系数据集 - 相须相使相畏相杀",
+  "version": "1.0",
+  "description": "基于传统中药学理论的配伍关系数据集，包含相须、相使、相畏、相杀四种关系",
+  "source": "《神农本草经》、《本草纲目》等古典医籍",
+  "relationships": [
+    {
+      "id": "xuxu_01",
+      "type": "相须",
+      "herb_a": "麻黄",
+      "herb_b": "桂枝",
+      "description": "麻黄与桂枝相须为用，发汗解表之力增强",
+      "effect": "增强发汗解表功效",
+      "example_prescription": "麻黄汤",
+      "mechanism": "两者均为辛温解表药，配伍后协同增强发汗作用"
+    },
+    {
+      "id": "xuxu_02",
+      "type": "相须",
+      "herb_a": "石膏",
+      "herb_b": "知母",
+      "description": "石膏与知母相须为用，清热泻火之力大增",
+      "effect": "增强清热泻火功效",
+      "example_prescription": "白虎汤",
+      "mechanism": "石膏辛甘大寒，知母苦寒滋润，配伍后清热不伤阴"
+    },
+    {
+      "id": "xuxu_03",
+      "type": "相须",
+      "herb_a": "大黄",
+      "herb_b": "芒硝",
+      "description": "大黄与芒硝相须为用，攻下热结之力增强",
+      "effect": "增强泻下攻积功效",
+      "example_prescription": "大承气汤",
+      "mechanism": "大黄攻积导滞，芒硝软坚润燥，配伍后泻下力强"
+    },
+    {
+      "id": "xuxu_04",
+      "type": "相须",
+      "herb_a": "乳香",
+      "herb_b": "没药",
+      "description": "乳香与没药相须为用，活血止痛之力增强",
+      "effect": "增强活血化瘀、消肿止痛功效",
+      "example_prescription": "活络效灵丹",
+      "mechanism": "两者均能活血行气止痛，配伍后效果协同"
+    },
+    {
+      "id": "xuxu_05",
+      "type": "相须",
+      "herb_a": "三棱",
+      "herb_b": "莪术",
+      "description": "三棱与莪术相须为用，破血行气之力增强",
+      "effect": "增强破血逐瘀、行气止痛功效",
+      "example_prescription": "三棱丸",
+      "mechanism": "两者均为破血消癥药，配伍后破血行气力强"
+    },
+    {
+      "id": "xiangshi_01",
+      "type": "相使",
+      "herb_a": "黄芪",
+      "herb_b": "茯苓",
+      "description": "黄芪配茯苓，茯苓增强黄芪的益气健脾利水功效",
+      "effect": "增强益气利水消肿功效",
+      "example_prescription": "防己黄芪汤",
+      "mechanism": "黄芪益气利水为主，茯苓健脾渗湿为辅，增强利水效果"
+    },
+    {
+      "id": "xianshi_02",
+      "type": "相使",
+      "herb_a": "黄连",
+      "herb_b": "木香",
+      "description": "黄连配木香，木香增强黄连的清热燥湿、行气止痛功效",
+      "effect": "清热燥湿、行气止痛",
+      "example_prescription": "香连丸",
+      "mechanism": "黄连清热燥湿为主，木香行气止痛为辅，治疗湿热痢疾"
+    },
+    {
+      "id": "xianshi_03",
+      "type": "相使",
+      "herb_a": "枸杞子",
+      "herb_b": "菊花",
+      "description": "枸杞子配菊花，菊花增强枸杞子的滋阴明目功效",
+      "effect": "增强滋阴明目功效",
+      "example_prescription": "杞菊地黄丸",
+      "mechanism": "枸杞子滋补肝肾明目为主，菊花清肝明目为辅"
+    },
+    {
+      "id": "xianshi_04",
+      "type": "相使",
+      "herb_a": "苍术",
+      "herb_b": "黄柏",
+      "description": "苍术配黄柏，黄柏增强苍术的清热燥湿功效",
+      "effect": "清热燥湿，治疗下焦湿热",
+      "example_prescription": "二妙散",
+      "mechanism": "苍术燥湿健脾为主，黄柏清热燥湿为辅"
+    },
+    {
+      "id": "xianshi_05",
+      "type": "相使",
+      "herb_a": "柴胡",
+      "herb_b": "黄芩",
+      "description": "柴胡配黄芩，黄芩增强柴胡的疏肝解郁、和解少阳功效",
+      "effect": "和解少阳，疏肝清热",
+      "example_prescription": "小柴胡汤",
+      "mechanism": "柴胡疏肝解郁为主，黄芩清热泻火为辅"
+    },
+    {
+      "id": "xiangwei_01",
+      "type": "相畏",
+      "herb_a": "半夏",
+      "herb_b": "生姜",
+      "description": "半夏畏生姜，生姜能制半夏之毒",
+      "effect": "减轻或消除半夏的毒性",
+      "usage": "半夏常用生姜炮制或以生姜配伍",
+      "mechanism": "生姜能抑制半夏的刺激性毒性成分"
+    },
+    {
+      "id": "xiangwei_02",
+      "type": "相畏",
+      "herb_a": "附子",
+      "herb_b": "干姜",
+      "description": "附子畏干姜，干姜能制附子之毒",
+      "effect": "减轻或消除附子的毒性",
+      "usage": "附子常与干姜配伍使用",
+      "mechanism": "干姜能降低附子的乌头碱毒性"
+    },
+    {
+      "id": "xiangwei_03",
+      "type": "相畏",
+      "herb_a": "甘遂",
+      "herb_b": "大枣",
+      "description": "甘遂畏大枣，大枣能缓和甘遂的峻烈之性",
+      "effect": "缓和甘遂的毒烈之性",
+      "usage": "十枣汤中用大枣配伍甘遂",
+      "mechanism": "大枣能保护脾胃，减轻甘遂的刺激性"
+    },
+    {
+      "id": "xiangwei_04",
+      "type": "相畏",
+      "herb_a": "常山",
+      "herb_b": "陈皮",
+      "description": "常山畏陈皮，陈皮能减轻常山的致吐副作用",
+      "effect": "减轻常山的呕吐副作用",
+      "usage": "截疟方中常配伍陈皮",
+      "mechanism": "陈皮理气和胃，对抗常山的胃肠道刺激"
+    },
+    {
+      "id": "xiangwei_05",
+      "type": "相畏",
+      "herb_a": "乌头",
+      "herb_b": "蜂蜜",
+      "description": "乌头畏蜂蜜，蜂蜜能制乌头之毒",
+      "effect": "减轻乌头的毒性",
+      "usage": "乌头常用蜂蜜炮制",
+      "mechanism": "蜂蜜中的成分能与乌头碱结合降低毒性"
+    },
+    {
+      "id": "xiangsha_01",
+      "type": "相杀",
+      "herb_a": "生姜",
+      "herb_b": "半夏",
+      "description": "生姜杀半夏毒，能消除半夏的毒性",
+      "effect": "消除半夏的毒性",
+      "usage": "半夏的炮制和配伍常用生姜",
+      "mechanism": "从相畏关系的另一角度描述"
+    },
+    {
+      "id": "xiangsha_02",
+      "type": "相杀",
+      "herb_a": "防风",
+      "herb_b": "附子",
+      "description": "防风杀附子毒，能减轻附子的毒性",
+      "effect": "减轻附子的毒性",
+      "usage": "某些方剂中防风与附子同用",
+      "mechanism": "防风能抑制附子的毒性成分"
+    },
+    {
+      "id": "xiangsha_03",
+      "type": "相杀",
+      "herb_a": "绿豆",
+      "herb_b": "巴豆",
+      "description": "绿豆杀巴豆毒，能解巴豆的毒性",
+      "effect": "解巴豆中毒",
+      "usage": "巴豆中毒可用绿豆汤解救",
+      "mechanism": "绿豆有清热解毒作用，能对抗巴豆的毒性"
+    },
+    {
+      "id": "xiangsha_04",
+      "type": "相杀",
+      "herb_a": "金银花",
+      "herb_b": "砒霜",
+      "description": "金银花杀砒霜毒，有一定解毒作用",
+      "effect": "缓解砒霜中毒",
+      "usage": "传统解毒方剂中应用",
+      "mechanism": "金银花的清热解毒成分有一定解毒作用"
+    },
+    {
+      "id": "xiangsha_05",
+      "type": "相杀",
+      "herb_a": "甘草",
+      "herb_b": "乌头",
+      "description": "甘草杀乌头毒，能减轻乌头的毒性",
+      "effect": "减轻乌头类药物的毒性",
+      "usage": "乌头类方剂中常配伍甘草",
+      "mechanism": "甘草酸等成分能与乌头碱结合"
+    }
+  ]
+}

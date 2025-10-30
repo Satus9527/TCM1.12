@@ -4,10 +4,25 @@ const config = require('../../config');
 /**
  * 生成访问令牌
  * @param {Object} payload - JWT 载荷数据
+ * @param {string} payload.user_id - 用户ID
+ * @param {string} payload.username - 用户名
+ * @param {string} payload.role - 用户角色
  * @returns {string} JWT token
  */
 const generateAccessToken = (payload) => {
-  return jwt.sign(payload, config.jwt.secret, {
+  // 使用标准 JWT 字段名
+  // sub (Subject): 用户ID
+  // rol (Role): 用户角色 (自定义声明)
+  const standardPayload = {
+    sub: payload.user_id || payload.sub,        // 用户ID (标准字段)
+    rol: payload.role || payload.rol,           // 用户角色 (自定义字段)
+    username: payload.username,                 // 用户名
+    // 保留原始字段以保持向后兼容
+    user_id: payload.user_id || payload.sub,
+    role: payload.role || payload.rol
+  };
+
+  return jwt.sign(standardPayload, config.jwt.secret, {
     expiresIn: config.jwt.accessExpiration
   });
 };
@@ -15,10 +30,18 @@ const generateAccessToken = (payload) => {
 /**
  * 生成刷新令牌
  * @param {Object} payload - JWT 载荷数据
+ * @param {string} payload.user_id - 用户ID
  * @returns {string} JWT token
  */
 const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, config.jwt.secret, {
+  // Refresh Token 只包含最小必要信息
+  const standardPayload = {
+    sub: payload.user_id || payload.sub,        // 用户ID
+    // 保留原始字段以保持向后兼容
+    user_id: payload.user_id || payload.sub
+  };
+
+  return jwt.sign(standardPayload, config.jwt.secret, {
     expiresIn: config.jwt.refreshExpiration
   });
 };
