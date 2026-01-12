@@ -1,0 +1,10 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <pattern id="cloudPattern" x="0" y="0" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
+            <rect width="${patternWidth}" height="${patternHeight}" fill="${bgColor}"/>
+            <path d="M${unit},${unit*2} C${unit*0.5},${unit*1.5} ${unit*0.5},${unit*0.5} ${unit},${unit} C${unit*1.5},${unit*0.5} ${unit*2},${unit*1.5} ${unit*2},${unit*2} C${unit*2.5},${unit*2} ${unit*3},${unit*2.5} ${unit*3},${unit*3} C${unit*3},${unit*3.5} ${unit*2.5},${unit*4} ${unit*2},${unit*4} C${unit*1.5},${unit*4} ${unit},${unit*3.5} ${unit},${unit*3} C${unit*0.5},${unit*3} 0,${unit*2.5} 0,${unit*2} C0,${unit*1.5} ${unit*0.5},${unit} ${unit},${unit} Z" fill="${pColor}"/>
+            <path d="M${unit*5},${unit*3} C${unit*4.5},${unit*2.5} ${unit*4.5},${unit*1.5} ${unit*5},${unit} C${unit*5.5},${unit*0.5} ${unit*6},${unit*1.5} ${unit*6},${unit*2} C${unit*6.5},${unit*2} ${unit*7},${unit*2.5} ${unit*7},${unit*3} C${unit*7},${unit*3.5} ${unit*6.5},${unit*4} ${unit*6},${unit*4} C${unit*5.5},${unit*4} ${unit*5},${unit*3.5} ${unit*5},${unit*3} Z" fill="${sColor}"/>
+        </pattern>
+    </defs>
+    <rect width="400" height="400" fill="url(#cloudPattern)"/>
+</svg>

@@ -1,0 +1,89 @@
+/* 响应式工具类 */
+.mobile-hidden {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
+.tablet-hidden {
+    display: block;
+}
+
+.tablet-only {
+    display: none;
+}
+
+/* 移动端断点 */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .mobile-fullwidth {
+        width: 100% !important;
+    }
+
+    .mobile-text-center {
+        text-align: center !important;
+    }
+
+    .mobile-p-16 {
+        padding: 16px !important;
+    }
+
+    .mobile-mt-16 {
+        margin-top: 16px !important;
+    }
+}
+
+/* 平板断点 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .tablet-hidden {
+        display: none !important;
+    }
+
+    .tablet-only {
+        display: block !important;
+    }
+}
+
+/* 超小屏幕 */
+@media (max-width: 480px) {
+    .xs-hidden {
+        display: none !important;
+    }
+
+    .text-xs {
+        font-size: 12px !important;
+    }
+
+    .p-xs {
+        padding: 8px !important;
+    }
+}
+
+/* 弹性图片 */
+.responsive-img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 弹性网格 */
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+/* 移动端安全区域 */
+.mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+}
