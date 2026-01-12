@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<Foundry>
-<VM>
-<VMId type="string">52 15 e9 f5 b2 61 77 5c-8a 24 f3 a6 fb ac 1e 55</VMId>
-<ClientMetaData>
-<clientMetaDataAttributes/>
-<HistoryEventList/></ClientMetaData>
-<vmxPathName type="string">TCM Platform Server.vmx</vmxPathName></VM></Foundry>
