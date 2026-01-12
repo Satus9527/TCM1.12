@@ -230,7 +230,7 @@ export default {
           name: '游客用户',
           role: '游客',
           avatar: '',
-          permissions: ['dashboard', 'knowledge']
+          permissions: ['dashboard', 'knowledge', 'simulation']
         }
 
         await store.dispatch('login', userInfo)

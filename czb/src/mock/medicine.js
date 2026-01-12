@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 import { mockAPI } from '@/mock'
 
-const useMock = process.env.VUE_APP_USE_MOCK === 'true'
+const useMock = import.meta.env.VUE_APP_USE_MOCK === 'true'
 
 export const medicineAPI = {
     // 搜索药材

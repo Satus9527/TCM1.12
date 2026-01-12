@@ -524,6 +524,11 @@
           </el-tab-pane>
         </el-tabs>
       </div>
+
+      <!-- AI智能咨询组件 -->
+      <div class="right-panel ai-panel ancient-panel">
+        <AIConsultation :onAddToPrescription="handleAddFromAIRecommendation" />
+      </div>
     </div>
 
     <!-- 剂量调整弹窗 -->
@@ -568,6 +573,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { medicineAPI } from '@/api/medicine'
 import { prescriptionAPI } from '@/api/prescription'
+import AIConsultation from '@/components/AIConsultation.vue'
 
 export default {
   name: 'AncientSimulationRoom',
@@ -959,6 +965,36 @@ export default {
       ElMessage.success('处方导出成功')
     }
 
+    // 处理从AI推荐添加到处方
+    const handleAddFromAIRecommendation = (prescription) => {
+      if (!prescription || !prescription.medicines) {
+        ElMessage.warning('未获取到可添加的方剂信息')
+        return
+      }
+
+      // 遍历推荐方剂中的药材，添加到当前处方
+      prescription.medicines.forEach(medicine => {
+        // 检查药材是否已存在
+        const existingIndex = prescriptionMedicines.value.findIndex(m => m.name === medicine.name)
+        if (existingIndex === -1) {
+          // 创建药材对象，使用模拟ID（实际应用中应该通过药材名称查找真实ID）
+          const newMedicine = {
+            id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: medicine.name,
+            dosage: medicine.dosage.replace('克', ''),
+            role: 'monarch', // 默认设置为君药
+            property: medicine.property || '',
+            efficacy: medicine.efficacy || ''
+          }
+          prescriptionMedicines.value.push(newMedicine)
+        } else {
+          ElMessage.warning(`${medicine.name} 已在处方中`)
+        }
+      })
+
+      ElMessage.success(`已添加${prescription.medicines.length}味药材到处方`)
+    }
+
     const loadMedicines = async () => {
       loadingMedicines.value = true
       try {
@@ -1049,7 +1085,8 @@ export default {
       clearPrescription,
       autoArrange,
       analyzeCompatibility,
-      exportPrescription
+      exportPrescription,
+      handleAddFromAIRecommendation
     }
   }
 }
@@ -1139,7 +1176,6 @@ export default {
     display: grid;
     grid-template-columns: 300px 1fr 400px;
     gap: 20px;
-    height: calc(100vh - 180px);
 
     @media (max-width: 1200px) {
       grid-template-columns: 280px 1fr;
@@ -1165,6 +1201,20 @@ export default {
       .right-panel {
         display: block;
         order: 2;
+      }
+    }
+  }
+
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    &.ai-panel {
+      margin-top: 20px;
+
+      @media (max-width: 768px) {
+        margin-top: 16px;
       }
     }
   }

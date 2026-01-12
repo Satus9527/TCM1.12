@@ -12,7 +12,7 @@ class WebSocketService {
             const response = await this.$api.get('/auth/ws-ticket');
             const ticket = response.data.ticket;
 
-            const wsUrl = `${process.env.VUE_APP_WS_URL}?ticket=${ticket}`;
+            const wsUrl = `${import.meta.env.VUE_APP_WS_URL}?ticket=${ticket}`;
             this.socket = new WebSocket(wsUrl);
 
             this.setupEventHandlers();
