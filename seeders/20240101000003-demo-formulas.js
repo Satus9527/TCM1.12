@@ -58,7 +58,10 @@ module.exports = {
       }
     ];
 
-    await queryInterface.bulkInsert('formulas', formulas);
+    // 使用 ignoreDuplicates 选项避免重复插入错误
+    await queryInterface.bulkInsert('formulas', formulas, {
+      ignoreDuplicates: true
+    });
   },
 
   down: async (queryInterface, Sequelize) => {

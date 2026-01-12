@@ -12,10 +12,7 @@ module.exports = {
         password_hash: bcrypt.hashSync('password123', 10),
         role: 'health_follower',
         email: 'health@example.com',
-        phone: '13800138000',
-        avatar_url: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        phone: '13800138000'
       },
       {
         user_id: uuidv4(),
@@ -23,10 +20,7 @@ module.exports = {
         password_hash: bcrypt.hashSync('password123', 10),
         role: 'student',
         email: 'student@example.com',
-        phone: '13800138001',
-        avatar_url: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        phone: '13800138001'
       },
       {
         user_id: uuidv4(),
@@ -34,14 +28,13 @@ module.exports = {
         password_hash: bcrypt.hashSync('password123', 10),
         role: 'teacher',
         email: 'teacher@example.com',
-        phone: '13800138002',
-        avatar_url: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        phone: '13800138002'
       }
     ];
 
-    await queryInterface.bulkInsert('users', users);
+    await queryInterface.bulkInsert('users', users, {
+      ignoreDuplicates: true
+    });
   },
 
   down: async (queryInterface, Sequelize) => {

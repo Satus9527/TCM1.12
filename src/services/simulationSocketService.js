@@ -323,18 +323,30 @@ async function triggerDebouncedAnalysis(userId) {
     return;
   }
 
-  // 3. 构建 E1 请求体
+  // ============ Colab适配: 序列化配伍数据为自然语言问题 ============
+  const compositionString = composition.map(med => {
+    return `${med.name} ${med.dosage || '10g'}`;
+  }).join('，');
+
+  const question = `请分析这个配伍：${compositionString}。` +
+    `请提供以下信息的JSON格式（用<JSON_START>...</JSON_END>包裹）：` +
+    `{` +
+    `  "overall_properties": { "nature": "...", "flavor": [...], "meridian": [...] },` +
+    `  "functions_analysis": { "解表": 5, "清热": 8, ... },` +
+    `  "suggestions": [...]` +
+    `}`;
+
   const e1RequestBody = {
-    composition: composition.map(item => ({
-      medicine_id: item.medicine_id || item.id,
-      name: item.name,
-      dosage: item.dosage || '10g'
-    }))
+    question: question
   };
 
   try {
-    // 4. 调用 E1 /analyze/composition 接口
-    logger.debug('调用E1分析服务', { userId, compositionCount: composition.length });
+    // 调用 E1 /consult 接口 (Colab)
+    logger.debug('调用E1分析服务 (Colab)', { 
+      userId, 
+      compositionCount: composition.length,
+      questionLength: question.length
+    });
     
     const response = await axios.post(
       config.aiService.analyzeUrl,
@@ -344,29 +356,77 @@ async function triggerDebouncedAnalysis(userId) {
       }
     );
 
-    // 5. 处理 E1 响应（成功）
+    // ============ Colab适配: 解析自由文本响应 ============
     if (response.status === 200 && response.data) {
-      const analysisData = response.data;
+      const responseData = response.data;
       
-      // 基础验证
-      if (!analysisData.analysis && !analysisData.suggestions) {
+      // 1. 验证基本格式
+      if (!responseData.success || !responseData.answer) {
+        logger.error('E1响应格式无效', { userId });
         throw new Error('E1响应格式无效');
       }
-
-      logger.info('AI分析成功', { userId });
-
-      // 推送分析结果
-      ws.send(JSON.stringify({
-        type: 'AI_ANALYSIS_RESULT',
-        payload: analysisData,
-        timestamp: new Date().toISOString()
-      }));
+      
+      // 2. 尝试解析JSON
+      const jsonMatch = responseData.answer.match(/<JSON_START>([\s\S]*?)<JSON_END>/);
+      
+      if (jsonMatch && jsonMatch[1]) {
+        try {
+          const analysisData = JSON.parse(jsonMatch[1]);
+          
+          // 验证必需字段
+          if (analysisData.overall_properties || analysisData.functions_analysis) {
+            logger.info('成功解析AI分析结果', { userId });
+            
+            // 推送分析结果
+            ws.send(JSON.stringify({
+              type: 'AI_ANALYSIS_RESULT',
+              payload: analysisData,
+              timestamp: new Date().toISOString()
+            }));
+          } else {
+            throw new Error('解析的JSON缺少必需字段');
+          }
+        } catch (parseError) {
+          logger.error('JSON解析失败', { 
+            userId, 
+            error: parseError.message,
+            jsonMatch: jsonMatch[1].substring(0, 100)
+          });
+          throw new Error('AI返回的分析数据格式错误');
+        }
+      } else {
+        // ⚠️ 无法解析JSON，使用降级方案
+        logger.warn('无法从AI答案中解析JSON，使用降级方案', { 
+          userId,
+          answerLength: responseData.answer.length,
+          answerPreview: responseData.answer.substring(0, 200)
+        });
+        
+        const fallbackResult = {
+          overall_properties: {
+            nature: '未知',
+            flavor: ['?'],
+            meridian: ['?']
+          },
+          functions_analysis: {
+            'AI原始回答': 10  // 特殊标记，告知前端显示原始文本
+          },
+          original_text: responseData.answer // 附带原始答案
+        };
+        
+        // 推送降级结果
+        ws.send(JSON.stringify({
+          type: 'AI_ANALYSIS_RESULT',
+          payload: fallbackResult,
+          timestamp: new Date().toISOString()
+        }));
+      }
     } else {
       throw new Error(`E1返回非200状态: ${response.status}`);
     }
 
   } catch (error) {
-    // 6. 处理 E1 响应（失败）
+    // 处理 E1 调用失败
     logger.error('AI分析失败', { 
       userId, 
       error: error.message,
@@ -377,7 +437,7 @@ async function triggerDebouncedAnalysis(userId) {
     
     if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
       errorMessage = 'AI分析超时，请稍后再试';
-    } else if (error.code === 'ECONNREFUSED') {
+    } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
       errorMessage = 'AI服务连接失败';
     }
 

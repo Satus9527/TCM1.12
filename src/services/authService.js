@@ -123,7 +123,12 @@ class AuthService {
       user_id: user.user_id
     });
 
-    // 保存 refresh token 到数据库
+    // 删除该用户的旧 refresh token（避免重复登录时的唯一性约束冲突）
+    await RefreshToken.destroy({
+      where: { user_id: user.user_id }
+    });
+
+    // 保存新的 refresh token 到数据库
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 

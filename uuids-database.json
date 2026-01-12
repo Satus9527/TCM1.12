@@ -1,0 +1,376 @@
+{
+  "export_date": "2025-11-03T10:17:11.898Z",
+  "summary": {
+    "total_medicines": 56,
+    "total_formulas": 17
+  },
+  "medicines": [
+    {
+      "medicine_id": "ebeaf18c-fbf6-4a06-b3c5-c8d697b4066d",
+      "name": "丹参",
+      "category": "活血药"
+    },
+    {
+      "medicine_id": "3571a734-1a20-45c2-9de8-8528a1a71613",
+      "name": "五味子",
+      "category": "收涩药"
+    },
+    {
+      "medicine_id": "ef76c5dd-ef1c-4229-a011-9b2a21189510",
+      "name": "人参",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "259fe3fc-d031-4486-afab-bd1ccf25b637",
+      "name": "半夏",
+      "category": "化痰药"
+    },
+    {
+      "medicine_id": "be7d2026-9255-421b-924d-b49535093676",
+      "name": "厚朴",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "b4943870-c004-4328-a6c6-a2793e173998",
+      "name": "吴茱萸",
+      "category": "温里药"
+    },
+    {
+      "medicine_id": "87213fd4-2d00-4181-af5f-9bc2850bfe99",
+      "name": "大枣",
+      "category": "补气药"
+    },
+    {
+      "medicine_id": "c037edab-0613-4cab-a0c8-5107f3ca2618",
+      "name": "大黄",
+      "category": "泻下药"
+    },
+    {
+      "medicine_id": "e58bdc5b-04a1-4d43-b565-a8edf04f5fb4",
+      "name": "山茱萸",
+      "category": "收涩药"
+    },
+    {
+      "medicine_id": "4c00eb3c-d0e8-4b8c-9b9f-848eab7f0fa0",
+      "name": "山药",
+      "category": "补气药"
+    },
+    {
+      "medicine_id": "9fe13c46-9eed-4741-b121-ce310442227c",
+      "name": "川芎",
+      "category": "活血化瘀药"
+    },
+    {
+      "medicine_id": "bd9451ed-e2a9-408a-a19c-239e5ebce5ce",
+      "name": "干姜",
+      "category": "温里药"
+    },
+    {
+      "medicine_id": "4cb9112e-9a1e-4f99-b1f8-f81ed4d121d4",
+      "name": "当归",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "aaa61f33-c17f-4c84-9683-7ab8d7da2a6f",
+      "name": "木香",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "07fe91a1-1ca8-43c7-aa7a-8925c934b2b3",
+      "name": "杏仁",
+      "category": "化痰药"
+    },
+    {
+      "medicine_id": "b6a593f5-3e96-47a4-9746-5f244ddb3308",
+      "name": "枳壳",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "5c879e76-bfad-4759-be30-4904ba5f656f",
+      "name": "枳实",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "6d575b4f-7758-4241-82fb-207284419f3d",
+      "name": "柴胡",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "e831cb96-a41f-4e25-94bc-2532ba832cbb",
+      "name": "桂枝",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "4e6b869e-0165-46c2-80b6-02e9a85a5142",
+      "name": "桃仁",
+      "category": "活血药"
+    },
+    {
+      "medicine_id": "b71c6c5f-5e6b-4ede-9a57-8c38fb0997fe",
+      "name": "桔梗",
+      "category": "化痰药"
+    },
+    {
+      "medicine_id": "8ebd4752-c4b9-4266-874c-15003011b3b6",
+      "name": "泽泻",
+      "category": "利水药"
+    },
+    {
+      "medicine_id": "e57d5ca7-ccb8-45a5-9d7f-079bee11a2d7",
+      "name": "淡豆豉",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "9d37ed4a-da27-4090-8869-9cedb26630a0",
+      "name": "炙甘草",
+      "category": "补气药"
+    },
+    {
+      "medicine_id": "763b0a92-8c49-4ef8-ab11-0b7e253ba27d",
+      "name": "熟地黄",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "41a3d095-94b8-459d-a555-a1447d85b334",
+      "name": "牛膝",
+      "category": "活血药"
+    },
+    {
+      "medicine_id": "c0e169ca-a875-480e-9497-c6f332a9755d",
+      "name": "牛蒡子",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "96b42756-2e2a-4259-9203-c2a570ccaa4f",
+      "name": "猪苓",
+      "category": "利水药"
+    },
+    {
+      "medicine_id": "d85c3b55-0f83-4354-a37c-73d01b273072",
+      "name": "甘草",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "3924ddea-7219-43bc-b638-62dbe7bcdbc3",
+      "name": "生地黄",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "d64071ae-2ea4-40af-a4a7-b6c472a9207c",
+      "name": "生姜",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "ce0ded1e-531e-49ae-bdde-69045e6745e4",
+      "name": "白术",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "e4867d3d-9753-4dcc-acc4-f4e01a1d21d1",
+      "name": "白芍",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "b301e0b9-105b-4546-b272-52ecaf213401",
+      "name": "石膏",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "282be82a-0ada-45e9-a6fe-14622ecca106",
+      "name": "竹叶",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "197c6b3b-bcb5-4720-a9f7-baab9d80add5",
+      "name": "红花",
+      "category": "活血药"
+    },
+    {
+      "medicine_id": "f0d05c3a-c875-4f44-ae15-5328d4114ac0",
+      "name": "肉桂",
+      "category": "温里药"
+    },
+    {
+      "medicine_id": "ced3d85e-72bd-4ea7-997b-b4134090d50b",
+      "name": "芒硝",
+      "category": "泻下药"
+    },
+    {
+      "medicine_id": "7a5d213e-964e-4a13-832b-67e862236d6c",
+      "name": "苍术",
+      "category": "化湿药"
+    },
+    {
+      "medicine_id": "597e7b89-0e38-4da9-843d-33354cba3472",
+      "name": "茯苓",
+      "category": "利水渗湿药"
+    },
+    {
+      "medicine_id": "06d8e336-0e51-4ffa-aa9b-ddc5bca212da",
+      "name": "荆芥",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "6267e8ac-1b22-47ce-a86f-d74e08f5d316",
+      "name": "薄荷",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "bfd42aa8-2307-4030-a3dd-cb41e72a4a61",
+      "name": "薏苡仁",
+      "category": "利水药"
+    },
+    {
+      "medicine_id": "ea79b0ab-3a02-484d-8897-404b1f6da571",
+      "name": "赤芍",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "a0484bef-905b-4bbd-8730-0a764ce92a47",
+      "name": "连翘",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "bf57a833-e2d7-4773-b348-bb399c4bae33",
+      "name": "金银花",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "f51cfb53-b433-46bc-941a-1d2b48bb034f",
+      "name": "防风",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "bb089204-0c9f-4a11-aa28-b2dfc40526f3",
+      "name": "阿胶",
+      "category": "补血药"
+    },
+    {
+      "medicine_id": "0dae25ce-9755-417f-ad3f-03206709b898",
+      "name": "附子",
+      "category": "温里药"
+    },
+    {
+      "medicine_id": "d8757133-7835-4a82-9902-2ec57333bbf6",
+      "name": "陈皮",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "44838457-b92e-415c-9d02-b12502a774ce",
+      "name": "香附",
+      "category": "理气药"
+    },
+    {
+      "medicine_id": "a46e3697-4d64-4167-a256-05ed5e6c7be0",
+      "name": "麦冬",
+      "category": "补阴药"
+    },
+    {
+      "medicine_id": "4936edc5-6af4-478d-abc6-1d175ba290c0",
+      "name": "麻黄",
+      "category": "解表药"
+    },
+    {
+      "medicine_id": "3b10b7b7-4ef0-4046-91fc-9def214af068",
+      "name": "黄芩",
+      "category": "清热药"
+    },
+    {
+      "medicine_id": "055b7b8c-8492-466b-a2a4-d6f7c8932784",
+      "name": "黄芪",
+      "category": "补虚药"
+    },
+    {
+      "medicine_id": "a113edd9-15fe-4192-8af9-58f90a0a7610",
+      "name": "黄连",
+      "category": "清热药"
+    }
+  ],
+  "formulas": [
+    {
+      "formula_id": "2b403070-c02b-430d-866e-b0644d77195e",
+      "name": "二陈汤",
+      "category": ""
+    },
+    {
+      "formula_id": "f1167103-855c-4ba6-9e6c-225b62dd459b",
+      "name": "五苓散",
+      "category": ""
+    },
+    {
+      "formula_id": "9210e063-1c96-41cb-9127-04ee2da2f6b7",
+      "name": "八珍汤",
+      "category": "补益剂"
+    },
+    {
+      "formula_id": "6e598704-beeb-4f3a-a8ff-5b9789e88979",
+      "name": "六味地黄丸",
+      "category": ""
+    },
+    {
+      "formula_id": "1ad75812-66fb-42f9-b53f-4e4e1c0644b8",
+      "name": "四君子汤",
+      "category": "补益剂"
+    },
+    {
+      "formula_id": "476183c0-cc4d-40ab-a0ab-17d41c1540c2",
+      "name": "四物汤",
+      "category": "补益剂"
+    },
+    {
+      "formula_id": "a570d656-9ae7-47f0-a490-cfff77c841e3",
+      "name": "大承气汤",
+      "category": ""
+    },
+    {
+      "formula_id": "d396c6be-6c09-46c6-8893-2a02a17d0bb1",
+      "name": "小柴胡汤",
+      "category": ""
+    },
+    {
+      "formula_id": "ce439d25-f9f6-418e-9da7-7948b931621c",
+      "name": "平胃散",
+      "category": ""
+    },
+    {
+      "formula_id": "6fe23f3d-a773-4941-89a2-42ebd697ef85",
+      "name": "当归补血汤",
+      "category": ""
+    },
+    {
+      "formula_id": "24abe694-369a-4fa9-a726-8e01d15512d0",
+      "name": "桂枝汤",
+      "category": ""
+    },
+    {
+      "formula_id": "33ee1714-825e-4e8e-a83b-3cc0cb8977ab",
+      "name": "玉屏风散",
+      "category": ""
+    },
+    {
+      "formula_id": "1e25a137-7130-44d9-9537-6ec0e03283c6",
+      "name": "生脉散",
+      "category": ""
+    },
+    {
+      "formula_id": "204b26f2-85d6-42f8-8a42-149ac66cb0ac",
+      "name": "血府逐瘀汤",
+      "category": ""
+    },
+    {
+      "formula_id": "ddf2279a-e9a8-4eae-8de5-f313b58f62b2",
+      "name": "逍遥散",
+      "category": ""
+    },
+    {
+      "formula_id": "b3ff9e4c-6e8d-4099-a693-7279a1108a85",
+      "name": "银翘散",
+      "category": ""
+    },
+    {
+      "formula_id": "ef873ed0-1791-48d7-870d-d35e8368a047",
+      "name": "麻黄汤",
+      "category": ""
+    }
+  ]
+}

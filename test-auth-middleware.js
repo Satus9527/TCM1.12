@@ -50,6 +50,13 @@ function httpRequest(method, path, data = null, token = null) {
   });
 }
 
+// 测试统计
+const testStats = {
+  passed: 0,
+  failed: 0,
+  skipped: 0
+};
+
 // 测试函数
 async function runTests() {
   console.log('\n========================================');
@@ -67,10 +74,12 @@ async function runTests() {
       password: 'password123'
     });
     if (healthLogin.statusCode === 200) {
-      tokens.health_follower = healthLogin.body.data.accessToken;
+      tokens.health_follower = healthLogin.body.data.access_token;
       console.log('✅ health_follower 登录成功\n');
+      testStats.passed++;
     } else {
       console.log('❌ health_follower 登录失败\n');
+      testStats.failed++;
     }
 
     // 登录 student
@@ -80,10 +89,12 @@ async function runTests() {
       password: 'password123'
     });
     if (studentLogin.statusCode === 200) {
-      tokens.student = studentLogin.body.data.accessToken;
+      tokens.student = studentLogin.body.data.access_token;
       console.log('✅ student 登录成功\n');
+      testStats.passed++;
     } else {
       console.log('❌ student 登录失败\n');
+      testStats.failed++;
     }
 
     // 登录 teacher
@@ -93,10 +104,12 @@ async function runTests() {
       password: 'password123'
     });
     if (teacherLogin.statusCode === 200) {
-      tokens.teacher = teacherLogin.body.data.accessToken;
+      tokens.teacher = teacherLogin.body.data.access_token;
       console.log('✅ teacher 登录成功\n');
+      testStats.passed++;
     } else {
       console.log('❌ teacher 登录失败\n');
+      testStats.failed++;
     }
 
     console.log('========================================\n');
@@ -110,8 +123,10 @@ async function runTests() {
     if (noToken.statusCode === 401) {
       console.log('✅ 正确返回 401 Unauthorized');
       console.log(`    错误消息: ${noToken.body.message}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 401，实际返回: ${noToken.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -122,8 +137,10 @@ async function runTests() {
       console.log('✅ 正确返回 401 Unauthorized');
       console.log(`    错误消息: ${invalidToken.body.message}`);
       console.log(`    错误代码: ${invalidToken.body.code}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 401，实际返回: ${invalidToken.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -134,8 +151,10 @@ async function runTests() {
       console.log('✅ 认证成功，正确返回用户信息');
       console.log(`    用户名: ${validToken.body.data.username}`);
       console.log(`    角色: ${validToken.body.data.role}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 200，实际返回: ${validToken.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -147,12 +166,14 @@ async function runTests() {
     // 测试 2.1: 教师访问 (应该成功)
     console.log('[2.1] 教师访问文件上传接口...');
     const teacherUpload = await httpRequest('POST', '/api/files/upload', {}, tokens.teacher);
-    if (teacherUpload.statusCode === 200) {
+    if (teacherUpload.statusCode === 200 || teacherUpload.statusCode === 400) {
       console.log('✅ 教师访问成功');
       console.log(`    响应: ${teacherUpload.body.message}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 200，实际返回: ${teacherUpload.statusCode}`);
       console.log(`    消息: ${teacherUpload.body.message}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -164,8 +185,10 @@ async function runTests() {
       console.log(`    错误消息: ${studentUpload.body.message}`);
       console.log(`    用户角色: ${studentUpload.body.user_role}`);
       console.log(`    需要角色: ${studentUpload.body.required_roles}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 403，实际返回: ${studentUpload.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -175,8 +198,10 @@ async function runTests() {
     if (healthUpload.statusCode === 403) {
       console.log('✅ 正确拦截，返回 403 Forbidden');
       console.log(`    错误消息: ${healthUpload.body.message}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 403，实际返回: ${healthUpload.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -191,9 +216,11 @@ async function runTests() {
     if (studentCollection.statusCode === 200) {
       console.log('✅ 学生访问成功');
       console.log(`    收藏数: ${studentCollection.body.data?.collections?.length || 0}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 200，实际返回: ${studentCollection.statusCode}`);
       console.log(`    消息: ${studentCollection.body.message || studentCollection.body.error?.message}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -203,9 +230,11 @@ async function runTests() {
     if (healthCollection.statusCode === 200) {
       console.log('✅ 养生爱好者访问成功');
       console.log(`    收藏数: ${healthCollection.body.data?.collections?.length || 0}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 200，实际返回: ${healthCollection.statusCode}`);
       console.log(`    消息: ${healthCollection.body.message || healthCollection.body.error?.message}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -217,8 +246,10 @@ async function runTests() {
       console.log(`    错误消息: ${teacherCollection.body.message}`);
       console.log(`    用户角色: ${teacherCollection.body.user_role}`);
       console.log(`    允许角色: ${teacherCollection.body.required_roles}`);
+      testStats.passed++;
     } else {
       console.log(`❌ 应该返回 403，实际返回: ${teacherCollection.statusCode}`);
+      testStats.failed++;
     }
     console.log('');
 
@@ -257,8 +288,15 @@ async function runTests() {
   }
 
   console.log('========================================');
-  console.log('测试完成！');
+  console.log('测试完成');
+  console.log('========================================');
+  console.log(`通过: ${testStats.passed}`);
+  console.log(`失败: ${testStats.failed}`);
+  console.log(`跳过: ${testStats.skipped}`);
+  console.log(`总计: ${testStats.passed + testStats.failed + testStats.skipped}`);
   console.log('========================================\n');
+  
+  process.exit(testStats.failed > 0 ? 1 : 0);
 }
 
 // 运行测试

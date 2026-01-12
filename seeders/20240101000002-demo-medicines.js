@@ -177,7 +177,10 @@ module.exports = {
       }
     ];
 
-    await queryInterface.bulkInsert('medicines', medicines);
+    // 使用 ignoreDuplicates 选项避免重复插入错误
+    await queryInterface.bulkInsert('medicines', medicines, {
+      ignoreDuplicates: true
+    });
   },
 
   down: async (queryInterface, Sequelize) => {

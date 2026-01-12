@@ -72,17 +72,8 @@ class FormulaService {
    * @returns {Promise<Object>} 方剂详情
    */
   async getFormulaById(formulaId) {
-    const formula = await Formula.findByPk(formulaId, {
-      include: [{
-        model: FormulaComposition,
-        as: 'compositions',
-        include: [{
-          model: Medicine,
-          as: 'medicine',
-          attributes: ['medicine_id', 'name', 'pinyin', 'category', 'nature', 'flavor']
-        }]
-      }]
-    });
+    // 先查询方剂基本信息
+    const formula = await Formula.findByPk(formulaId);
 
     if (!formula) {
       const error = new Error('方剂不存在');
@@ -91,7 +82,42 @@ class FormulaService {
       throw error;
     }
 
-    return formula;
+    // 单独查询组成药材
+    const compositions = await FormulaComposition.findAll({
+      where: { formula_id: formulaId },
+      include: [{
+        model: Medicine,
+        as: 'medicine',
+        attributes: ['medicine_id', 'name', 'pinyin', 'category', 'nature', 'flavor']
+      }],
+      order: [['created_at', 'ASC']]
+    });
+
+    const result = formula.toJSON();
+
+    // 格式化组成药材
+    if (compositions && compositions.length > 0) {
+      result.compositions = compositions.map(comp => {
+        const medicine = comp.medicine || comp.Medicine || {};
+        return {
+          composition_id: comp.composition_id,
+          medicine_id: medicine.medicine_id,
+          medicine_name: medicine.name,
+          pinyin: medicine.pinyin,
+          category: medicine.category,
+          nature: medicine.nature,
+          flavor: medicine.flavor,
+          dosage: comp.dosage || '',
+          role: comp.role || '',
+          processing: comp.processing || '',
+          notes: comp.notes || ''
+        };
+      });
+    } else {
+      result.compositions = [];
+    }
+
+    return result;
   }
 
   /**

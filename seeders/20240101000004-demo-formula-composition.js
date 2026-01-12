@@ -153,7 +153,9 @@ module.exports = {
 
     // 插入组成数据
     if (compositions.length > 0) {
-      await queryInterface.bulkInsert('formula_composition', compositions);
+      await queryInterface.bulkInsert('formula_composition', compositions, {
+        ignoreDuplicates: true
+      });
       console.log(`Successfully inserted ${compositions.length} formula composition records`);
     } else {
       console.log('No compositions to insert - please check if formulas and medicines exist in database');

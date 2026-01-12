@@ -65,6 +65,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    english_name: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      comment: '英文名（拉丁学名）'
+    },
+    toxicity: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: '无毒',
+      comment: '毒性：无毒、小毒、有毒、大毒'
+    },
+    modern_research: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: '现代研究'
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

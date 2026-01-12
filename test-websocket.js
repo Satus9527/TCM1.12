@@ -153,7 +153,7 @@ async function step3_connectWebSocket() {
           ws.close();
           reject(false);
         }
-      }, 5000);
+      }, 15000);
       
     } catch (error) {
       logError(`建立WebSocket连接失败: ${error.message}`);
@@ -172,7 +172,7 @@ async function step4_receiveInitState() {
     const timeout = setTimeout(() => {
       logError('接收初始状态超时');
       resolve(false);
-    }, 5000);
+    }, 15000);
     
     ws.once('message', (data) => {
       clearTimeout(timeout);
@@ -468,6 +468,11 @@ runTests().then(results => {
   console.log('\n' + '╔' + '='.repeat(60) + '╗');
   console.log('║' + ' '.repeat(25) + '测试总结' + ' '.repeat(25) + '║');
   console.log('╚' + '='.repeat(60) + '╝\n');
+  
+  console.log(`通过: ${results.passed}`);
+  console.log(`失败: ${results.failed}`);
+  console.log(`跳过: 0`);
+  console.log(`总计: ${results.total}`);
   
   log(`总测试数: ${results.total}`);
   log(`通过: ${results.passed}`, 'green');

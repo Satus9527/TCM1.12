@@ -40,6 +40,27 @@ const config = {
     timeout: parseInt(process.env.E1_TIMEOUT_MS, 10) || 5000
   },
   
+  // D8 对象存储配置（AWS S3兼容）
+  d8: {
+    endpoint: process.env.D8_ENDPOINT || 'http://localhost:9000',
+    region: process.env.D8_REGION || 'us-east-1',
+    bucket: process.env.D8_BUCKET || 'tcm-platform-files',
+    accessKeyId: process.env.D8_ACCESS_KEY_ID || 'minioadmin',
+    secretAccessKey: process.env.D8_SECRET_ACCESS_KEY || 'minioadmin',
+    forcePathStyle: process.env.D8_FORCE_PATH_STYLE === 'true' || true // MinIO需要
+  },
+  
+  // 文件上传配置
+  upload: {
+    maxFileSize: parseInt(process.env.UPLOAD_MAX_FILE_SIZE, 10) || 50 * 1024 * 1024, // 默认50MB
+    allowedMimeTypes: (process.env.UPLOAD_ALLOWED_MIME_TYPES || 
+      'application/pdf,image/jpeg,image/png,image/gif,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,video/mp4'
+    ).split(',').map(type => type.trim()),
+    allowedExtensions: (process.env.UPLOAD_ALLOWED_EXTENSIONS || 
+      '.pdf,.jpg,.jpeg,.png,.gif,.ppt,.pptx,.doc,.docx,.mp4'
+    ).split(',').map(ext => ext.trim().toLowerCase())
+  },
+  
   logging: {
     level: process.env.LOG_LEVEL || 'info'
   }

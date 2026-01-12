@@ -48,6 +48,23 @@ class MedicineController {
   }
 
   /**
+   * 获取药材分类列表
+   * GET /api/medicine-categories
+   */
+  async getCategories(req, res, next) {
+    try {
+      const categories = await medicineService.getCategories();
+
+      res.json({
+        success: true,
+        data: categories
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * 创建药材
    * POST /api/medicines
    */

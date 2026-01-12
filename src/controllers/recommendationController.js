@@ -210,22 +210,34 @@ class RecommendationController {
   }
 
   /**
-   * 调用外部 AI 服务 E1
+   * 调用外部 AI 服务 E1 (Colab适配版本)
    * @param {Object} symptomsData - 症状数据
    * @param {string} requestId - 请求 ID
    * @returns {Promise<Object>} { success: boolean, data?: any, error?: string, message?: string }
    */
   async callAIService(symptomsData, requestId) {
+    // ============ Colab适配: 序列化结构化数据为自然语言问题 ============
+    let question = "我的症状是：" + symptomsData.symptoms.join('，');
+    
+    if (symptomsData.tongue_desc) {
+      question += "。舌象是：" + symptomsData.tongue_desc;
+    }
+    
+    if (symptomsData.user_profile) {
+      question += "。个人信息：" + JSON.stringify(symptomsData.user_profile);
+    }
+    
+    question += "。请根据这些信息，辨证并推荐合适的经典方剂ID（格式：辨证为：[证型]。方剂ID：[uuid]。）。";
+
     const e1RequestBody = {
-      symptoms: symptomsData.symptoms,
-      tongue_desc: symptomsData.tongue_desc || null,
-      user_profile: symptomsData.user_profile || null
+      question: question
     };
 
-    logger.debug('调用E1服务', {
+    logger.debug('调用E1服务 (Colab)', {
       correlationId: requestId,
       url: config.aiService.recommendUrl,
-      timeout: config.aiService.timeout
+      timeout: config.aiService.timeout,
+      question: question.substring(0, 100) + '...' // 只记录前100字符
     });
 
     try {
@@ -237,6 +249,7 @@ class RecommendationController {
           headers: {
             'Content-Type': 'application/json',
             'X-Request-ID': requestId
+            // 注意: Colab方案无需 X-API-Key
           }
         }
       );
@@ -255,30 +268,15 @@ class RecommendationController {
         };
       }
 
-      // 验证响应数据格式
+      // ============ Colab适配: 解析自由文本响应 ============
       const responseData = response.data;
-      if (!responseData) {
-        logger.error('E1响应数据为空', { correlationId: requestId });
-        return {
-          success: false,
-          error: 'empty_response',
-          message: 'AI服务返回数据为空'
-        };
-      }
-
-      // 检查是否包含推荐结果
-      // 支持两种格式：{ recommendations: [...] } 或直接数组 [...]
-      let recommendations = [];
-      if (Array.isArray(responseData)) {
-        recommendations = responseData;
-      } else if (Array.isArray(responseData.recommendations)) {
-        recommendations = responseData.recommendations;
-      } else if (Array.isArray(responseData.data)) {
-        recommendations = responseData.data;
-      } else {
-        logger.error('E1响应格式无效（缺少recommendations数组）', {
+      
+      if (!responseData || responseData.success !== true || !responseData.answer) {
+        logger.error('E1响应格式无效（缺少answer或success）', { 
           correlationId: requestId,
-          responseKeys: Object.keys(responseData)
+          hasData: !!responseData,
+          hasSuccess: responseData?.success,
+          hasAnswer: !!responseData?.answer
         });
         return {
           success: false,
@@ -287,10 +285,41 @@ class RecommendationController {
         };
       }
 
-      logger.info('E1服务调用成功', {
-        correlationId: requestId,
-        recommendationsCount: recommendations.length
-      });
+      // 尝试从自由文本中解析方剂ID和辨证
+      const formulaIdMatch = responseData.answer.match(/方剂ID：\[([^\]]+)\]/);
+      const reasoningMatch = responseData.answer.match(/辨证为：\[([^\]]+)\]/);
+      
+      let recommendations = [];
+      
+      if (formulaIdMatch && formulaIdMatch[1]) {
+        // 成功解析出方剂ID
+        recommendations = [{
+          formula_id: formulaIdMatch[1],
+          reasoning: reasoningMatch ? reasoningMatch[1] : 'AI推荐',
+          confidence: 0.7,
+          matched_symptoms: symptomsData.symptoms
+        }];
+        
+        logger.info('成功解析AI推荐结果', {
+          correlationId: requestId,
+          formula_id: formulaIdMatch[1],
+          reasoning: reasoningMatch ? reasoningMatch[1] : 'unknown'
+        });
+      } else {
+        // ⚠️ 无法解析，使用降级方案
+        logger.warn('无法从AI答案中解析方剂ID，使用降级方案', {
+          correlationId: requestId,
+          answerLength: responseData.answer.length,
+          answerPreview: responseData.answer.substring(0, 200)
+        });
+        
+        recommendations = [{
+          formula_id: 'generic-answer-uuid', // 特殊标记，前端需特殊处理
+          reasoning: responseData.answer,    // 完整答案作为推理
+          confidence: 0.5,
+          matched_symptoms: symptomsData.symptoms
+        }];
+      }
 
       return {
         success: true,
@@ -350,5 +379,10 @@ class RecommendationController {
   }
 }
 
-module.exports = new RecommendationController();
+const controller = new RecommendationController();
+
+// 绑定所有方法以保持this上下文
+controller.getRecommendation = controller.getRecommendation.bind(controller);
+
+module.exports = controller;
 

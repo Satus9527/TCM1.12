@@ -196,30 +196,56 @@ class KnowledgeDbService {
 
     // 2. 缓存未命中，查询数据库
     try {
-      const formula = await Formula.findByPk(formulaId, {
-        include: [
-          {
-            model: Medicine,
-            as: 'medicines',
-            through: {
-              model: FormulaComposition,
-              attributes: ['dosage', 'role', 'notes']
-            }
-          }
-        ]
-      });
+      // 先查询方剂基本信息
+      const formula = await Formula.findByPk(formulaId);
 
-      // 3. 写入缓存
-      if (formula) {
-        await this._setCache(cacheKey, formula.toJSON(), CACHE_TTL);
-        logger.info('查询方剂成功', { formulaId });
-      } else {
+      if (!formula) {
         // 缓存空值
         await this._setCache(cacheKey, null, 300); // 5 分钟
         logger.info('方剂不存在', { formulaId });
+        return null;
       }
 
-      return formula;
+      // 单独查询组成药材
+      const compositions = await FormulaComposition.findAll({
+        where: { formula_id: formulaId },
+        include: [{
+          model: Medicine,
+          as: 'medicine',
+          attributes: ['medicine_id', 'name', 'pinyin', 'category', 'nature', 'flavor']
+        }],
+        order: [['created_at', 'ASC']]
+      });
+
+      const result = formula.toJSON();
+
+      // 格式化组成药材
+      if (compositions && compositions.length > 0) {
+        result.compositions = compositions.map(comp => {
+          const medicine = comp.medicine || comp.Medicine || {};
+          return {
+            composition_id: comp.composition_id,
+            medicine_id: medicine.medicine_id,
+            medicine_name: medicine.name,
+            pinyin: medicine.pinyin,
+            category: medicine.category,
+            nature: medicine.nature,
+            flavor: medicine.flavor,
+            dosage: comp.dosage || '',
+            role: comp.role || '',
+            processing: comp.processing || '',
+            notes: comp.notes || ''
+          };
+        });
+      } else {
+        result.compositions = [];
+      }
+
+      // 3. 写入缓存
+      await this._setCache(cacheKey, result, CACHE_TTL);
+      logger.info('查询方剂成功', { formulaId });
+
+      return result;
     } catch (error) {
       logger.error('查询方剂失败', { formulaId, error: error.message });
       throw error;

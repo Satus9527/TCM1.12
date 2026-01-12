@@ -427,6 +427,11 @@ async function runAllTests() {
   log('║                        测试总结                                  ║', 'blue');
   log('╚══════════════════════════════════════════════════════════════════╝', 'blue');
   
+  console.log(`通过: ${results.passed}`);
+  console.log(`失败: ${results.failed}`);
+  console.log(`跳过: 0`);
+  console.log(`总计: ${results.total}`);
+  
   log(`\n总测试数: ${results.total}`);
   log(`通过: ${results.passed}`, 'green');
   log(`失败: ${results.failed}`, results.failed > 0 ? 'red' : 'green');

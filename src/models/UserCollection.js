@@ -1,66 +1,58 @@
+/**
+ * 用户收藏模型
+ * 用于存储用户收藏的药材和方剂
+ */
+
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
   const UserCollection = sequelize.define('UserCollection', {
-    collection_id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-      allowNull: false
-    },
-    user_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'user_id'
-      }
-    },
-    formula_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'formulas',
-        key: 'formula_id'
-      }
-    },
-    notes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: '用户收藏备注'
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW
+  collection_id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    comment: '收藏记录ID'
+  },
+  user_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    comment: '用户ID',
+    references: {
+      model: 'users',
+      key: 'user_id'
     }
-  }, {
-    tableName: 'user_collections',
-    timestamps: false,
-    indexes: [
-      {
-        unique: true,
-        fields: ['user_id', 'formula_id']
-      }
-    ]
+  },
+  content_type: {
+    type: DataTypes.ENUM('medicine', 'formula'),
+    allowNull: false,
+    comment: '内容类型：medicine-药材, formula-方剂'
+  },
+  content_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    comment: '内容ID（药材ID或方剂ID）'
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+    comment: '收藏时间'
+  }
+}, {
+  tableName: 'user_collections',
+  timestamps: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'content_type', 'content_id'],
+      name: 'unique_user_collection'
+    },
+    {
+      fields: ['user_id'],
+      name: 'idx_user_collections_user_id'
+    }
+  ]
   });
-
-  UserCollection.associate = (models) => {
-    // UserCollection belongs to User
-    UserCollection.belongsTo(models.User, {
-      foreignKey: 'user_id',
-      as: 'user',
-      onDelete: 'CASCADE'
-    });
-
-    // UserCollection belongs to Formula
-    UserCollection.belongsTo(models.Formula, {
-      foreignKey: 'formula_id',
-      as: 'formula',
-      onDelete: 'CASCADE'
-    });
-  };
 
   return UserCollection;
 };
-

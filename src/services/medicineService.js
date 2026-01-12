@@ -2,6 +2,7 @@ const { Medicine } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 const knowledgeDbService = require('./knowledgeDbService');
+const { Formula, FormulaComposition } = require('../models');
 
 class MedicineService {
   /**
@@ -85,8 +86,9 @@ class MedicineService {
    * @returns {Promise<Object>} 药材详情
    */
   async getMedicineById(medicineId) {
+    // 先查询药材基本信息
     const medicine = await Medicine.findByPk(medicineId);
-
+    
     if (!medicine) {
       const error = new Error('药材不存在');
       error.statusCode = 404;
@@ -94,7 +96,102 @@ class MedicineService {
       throw error;
     }
 
-    return medicine;
+    const result = medicine.toJSON();
+
+    // 单独查询常用药方（最多10个）
+    // 使用 try-catch 包裹，即使查询失败也不影响药材基本信息返回
+    try {
+      const formulas = await FormulaComposition.findAll({
+        where: { medicine_id: medicineId },
+        include: [{
+          model: Formula,
+          as: 'formula',  // FormulaComposition.belongsTo(Formula, { as: 'formula' })
+          attributes: ['formula_id', 'name', 'composition_summary'],
+          required: false  // LEFT JOIN，即使没有关联的 Formula 也返回 FormulaComposition
+        }],
+        attributes: ['dosage', 'role'],
+        limit: 10,
+        order: [['created_at', 'DESC']]
+      });
+
+      // 格式化常用药方
+      if (formulas && formulas.length > 0) {
+        result.common_formulas = formulas
+          .filter(fc => fc.formula)  // 过滤掉没有关联 Formula 的记录
+          .map(fc => {
+            const formula = fc.formula || {};
+            return {
+              name: formula.name || '',
+              composition: formula.composition_summary || '',
+              dosage: fc.dosage || '',
+              role: fc.role || ''
+            };
+          });
+      } else {
+        result.common_formulas = [];
+      }
+    } catch (error) {
+      // 如果查询常用药方失败，记录错误但不抛出，返回空数组
+      logger.warn('查询药材常用药方失败', {
+        medicineId,
+        error: error.message
+      });
+      result.common_formulas = [];
+    }
+
+    return result;
+  }
+
+  /**
+   * 获取药材分类列表
+   * 从药材表中提取唯一分类并统计每个分类的药材数量
+   * @returns {Promise<Array>} 分类列表
+   */
+  async getCategories() {
+    const { Sequelize } = require('sequelize');
+    const sequelize = Medicine.sequelize;
+    
+    // 从药材表中提取唯一分类并统计数量
+    const categories = await Medicine.findAll({
+      attributes: [
+        'category',
+        [Sequelize.fn('COUNT', Sequelize.col('Medicine.medicine_id')), 'count']
+      ],
+      where: {
+        category: {
+          [Op.ne]: null  // 排除分类为空的药材
+        }
+      },
+      group: ['category'],
+      order: [[Sequelize.fn('COUNT', Sequelize.col('Medicine.medicine_id')), 'DESC']],
+      raw: true
+    });
+
+    // 格式化返回数据
+    const result = categories.map(cat => ({
+      id: cat.category,  // 使用分类名称作为ID
+      name: cat.category,
+      count: parseInt(cat.count) || 0
+    }));
+
+    // 添加"全部药材"选项（统计所有分类的药材总数）
+    const totalCount = await Medicine.count({
+      where: {
+        category: {
+          [Op.ne]: null
+        }
+      }
+    });
+
+    // 将"全部药材"放在第一位
+    return [
+      {
+        id: 'all',
+        name: '全部药材',
+        count: totalCount
+      },
+      ...result
+    ];
   }
 
   /**

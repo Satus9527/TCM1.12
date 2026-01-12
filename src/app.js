@@ -13,6 +13,8 @@ const errorHandler = require('./middlewares/errorHandler');
 const indexRoutes = require('./routes');
 const authRoutes = require('./routes/authRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
+const formulaController = require('./controllers/formulaController');
+const medicineController = require('./controllers/medicineController');
 const formulaRoutes = require('./routes/formulaRoutes');
 const collectionRoutes = require('./routes/collectionRoutes');
 
@@ -45,15 +47,14 @@ app.use('/api/auth', authRoutes);
 // 药材路由
 app.use('/api/medicines', medicineRoutes);
 
+// 药材分类路由
+app.get('/api/medicine-categories', medicineController.getCategories);
+
 // 方剂路由
 app.use('/api/formulas', formulaRoutes);
 
 // 收藏路由
 app.use('/api/collections', collectionRoutes);
-
-// 文件路由
-const fileRoutes = require('./routes/fileRoutes');
-app.use('/api/files', fileRoutes);
 
 // 知识库路由
 const knowledgeRoutes = require('./routes/knowledgeRoutes');
@@ -63,11 +64,16 @@ app.use('/api/knowledge', knowledgeRoutes);
 const recommendationRoutes = require('./routes/recommendationRoutes');
 app.use('/api/recommend', recommendationRoutes);
 
+// 个性化内容路由（收藏、模拟方案）
+const contentRoutes = require('./routes/contentRoutes');
+app.use('/api/content', contentRoutes);
+
+// 文件管理路由（上传、列表、删除）
+const fileRoutes = require('./routes/fileRoutes');
+app.use('/api/files', fileRoutes);
+
 // 用户路由 (待实现)
 // app.use('/api/users', userRoutes);
-
-// 模拟路由 (待实现)
-// app.use('/api/simulations', simulationRoutes);
 
 // AI 服务路由 (待实现)
 // app.use('/api/ai', aiRoutes);
