@@ -4,7 +4,7 @@ import router from '@/router'
 
 // 创建axios实例
 const request = axios.create({
-    baseURL: import.meta.env.VUE_APP_API_BASE_URL || '/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -15,7 +15,7 @@ const request = axios.create({
 request.interceptors.request.use(
     (config) => {
         // 添加token
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('user-token')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
@@ -34,8 +34,11 @@ request.interceptors.response.use(
     (error) => {
         // 统一错误处理
         if (error.response?.status === 401) {
-            localStorage.removeItem('token')
-            router.push('/login')
+            // 清除token和用户信息
+            localStorage.removeItem('user-token')
+            localStorage.removeItem('user-info')
+            // 重新加载页面，确保store状态重置
+            window.location.href = '/login'
             ElMessage.error('登录已过期，请重新登录')
         } else if (error.response?.status === 500) {
             ElMessage.error('服务器错误，请稍后重试')

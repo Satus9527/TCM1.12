@@ -56,6 +56,7 @@ class MedicineService {
       offset: parseInt(offset),
       order: [[sortBy, sortOrder]],
       attributes: [
+        ['medicine_id', 'id'],
         'medicine_id',
         'name',
         'pinyin',
@@ -65,7 +66,8 @@ class MedicineService {
         'meridian',
         'efficacy',
         'usage_dosage',
-        'image_url'
+        'image_url',
+        'toxicity'
       ]
     });
 
@@ -96,7 +98,28 @@ class MedicineService {
       throw error;
     }
 
-    const result = medicine.toJSON();
+    const original = medicine.toJSON();
+
+    // 格式化返回结果，适配前端字段要求
+    const result = {
+      id: original.medicine_id,
+      medicine_id: original.medicine_id,
+      name: original.name,
+      latinName: original.english_name || '',
+      property: `${original.nature || ''}${original.flavor ? `, ${original.flavor}` : ''}`.trim(),
+      meridian: original.meridian || '',
+      efficacy: original.efficacy || '',
+      toxicity: original.toxicity || '无毒',
+      favorite: false, // 默认未收藏
+      suggestedDosage: '3-10', // 默认建议剂量
+      maxDosage: '15', // 默认最大剂量
+      usage: '煎服', // 默认用法
+      category: original.category || '',
+      mainEffects: original.efficacy ? original.efficacy.split('、') : [],
+      clinicalApplications: [],
+      contraindications: original.contraindications ? original.contraindications.split('、') : [],
+      modernResearch: original.modern_research || ''
+    };
 
     // 单独查询常用药方（最多10个）
     // 使用 try-catch 包裹，即使查询失败也不影响药材基本信息返回
@@ -192,6 +215,74 @@ class MedicineService {
       },
       ...result
     ];
+  }
+
+  /**
+   * 获取药材性味选项
+   * 从药材表中提取所有唯一的性味值
+   * @returns {Promise<Array>} 性味选项列表
+   */
+  async getProperties() {
+    // 从药材表中提取唯一的性味值
+    const properties = await Medicine.findAll({
+      attributes: [
+        [Medicine.sequelize.fn('DISTINCT', Medicine.sequelize.col('nature')), 'property']
+      ],
+      where: {
+        nature: {
+          [Op.ne]: null,
+          [Op.ne]: ''
+        }
+      },
+      raw: true
+    });
+
+    // 格式化返回数据
+    return properties
+      .filter(item => item.property) // 过滤空值
+      .map(item => ({
+        id: item.property,
+        name: item.property
+      }));
+  }
+
+  /**
+   * 获取药材功效选项
+   * 从药材表中提取所有唯一的功效值
+   * @returns {Promise<Array>} 功效选项列表
+   */
+  async getEfficacies() {
+    // 从药材表中提取所有功效
+    const medicines = await Medicine.findAll({
+      attributes: ['efficacy'],
+      where: {
+        efficacy: {
+          [Op.ne]: null,
+          [Op.ne]: ''
+        }
+      },
+      raw: true
+    });
+
+    // 提取所有功效关键词
+    const efficacySet = new Set();
+    medicines.forEach(medicine => {
+      if (medicine.efficacy) {
+        // 简单分割功效，实际可能需要更复杂的处理
+        const efficacyKeywords = medicine.efficacy.split('、');
+        efficacyKeywords.forEach(keyword => {
+          if (keyword.trim()) {
+            efficacySet.add(keyword.trim());
+          }
+        });
+      }
+    });
+
+    // 格式化返回数据
+    return Array.from(efficacySet).map(efficacy => ({
+      id: efficacy,
+      name: efficacy
+    }));
   }
 
   /**

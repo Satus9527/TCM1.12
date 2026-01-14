@@ -17,6 +17,10 @@ const formulaController = require('./controllers/formulaController');
 const medicineController = require('./controllers/medicineController');
 const formulaRoutes = require('./routes/formulaRoutes');
 const collectionRoutes = require('./routes/collectionRoutes');
+const prescriptionRoutes = require('./routes/prescriptionRoutes');
+const userRoutes = require('./routes/userRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const learningRoutes = require('./routes/learningRoutes');
 
 // 创建 Express 应用
 const app = express();
@@ -50,11 +54,29 @@ app.use('/api/medicines', medicineRoutes);
 // 药材分类路由
 app.get('/api/medicine-categories', medicineController.getCategories);
 
+// 药材性味路由
+app.get('/api/medicine-properties', medicineController.getProperties);
+
+// 药材功效路由
+app.get('/api/medicine-efficacies', medicineController.getEfficacies);
+
 // 方剂路由
 app.use('/api/formulas', formulaRoutes);
 
 // 收藏路由
 app.use('/api/collections', collectionRoutes);
+
+// 处方路由
+app.use('/api/prescriptions', prescriptionRoutes);
+
+// 用户路由
+app.use('/api/user', userRoutes);
+
+// AI咨询路由
+app.use('/api', aiRoutes);
+
+// 学习记录路由
+app.use('/api/learning', learningRoutes);
 
 // 知识库路由
 const knowledgeRoutes = require('./routes/knowledgeRoutes');
@@ -71,6 +93,10 @@ app.use('/api/content', contentRoutes);
 // 文件管理路由（上传、列表、删除）
 const fileRoutes = require('./routes/fileRoutes');
 app.use('/api/files', fileRoutes);
+
+// 功效协同路由
+const synergyRoutes = require('./routes/synergyRoutes');
+app.use('/api/synergy', synergyRoutes);
 
 // 用户路由 (待实现)
 // app.use('/api/users', userRoutes);

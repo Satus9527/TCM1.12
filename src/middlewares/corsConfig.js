@@ -12,9 +12,11 @@ const corsOptions = {
       'http://localhost:8080',
       'http://localhost:3000',
       'http://localhost:5173',  // Vite开发服务器
+      'http://localhost:5174',  // 另一个Vite开发服务器端口
       'http://127.0.0.1:8080',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173'
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174'
     ];
 
     // 在生产环境中添加实际的前端域名

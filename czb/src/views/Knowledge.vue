@@ -151,7 +151,7 @@
 
           <div class="medicine-grid">
             <div
-                v-for="medicine in medicines"
+                v-for="medicine in (medicines || [])"
                 :key="medicine.id"
                 class="medicine-card"
                 @click="viewMedicineDetail(medicine)"
@@ -204,7 +204,7 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-if="!searchLoading && medicines.length === 0" class="empty-state">
+          <div v-if="!searchLoading && (!medicines || medicines.length === 0)" class="empty-state">
             <div class="empty-icon">
               <i class="el-icon-search"></i>
             </div>
@@ -297,11 +297,22 @@
             <div class="detail-section full-width">
               <h3 class="section-title">功效主治</h3>
               <div class="efficacy-content">
-                <p>{{ selectedMedicine.efficacy }}</p>
                 <div v-if="selectedMedicine.mainEffects" class="effects-tags">
                   <el-tag
                       v-for="effect in selectedMedicine.mainEffects"
                       :key="effect"
+                      type="info"
+                      size="small"
+                      class="effect-tag"
+                  >
+                    {{ effect }}
+                  </el-tag>
+                </div>
+                <div v-else-if="selectedMedicine.efficacy" class="effects-tags">
+                  <!-- 如果没有mainEffects，则将efficacy按顿号分割为标签显示 -->
+                  <el-tag
+                      v-for="(effect, index) in selectedMedicine.efficacy.split('、')"
+                      :key="index"
                       type="info"
                       size="small"
                       class="effect-tag"
@@ -465,7 +476,13 @@ const recentItems = ref([])
 const loadCategories = async () => {
   try {
     const result = await medicineAPI.getCategories()
-    categories.value = result.data
+    // 适配后端返回格式 (code: 200, data: [...])
+    if (result && result.code === 200) {
+      categories.value = result.data || []
+    } else {
+      categories.value = []
+      console.error('分类数据格式错误:', result)
+    }
   } catch (error) {
     console.error('加载分类失败:', error)
     ElMessage.error('加载分类失败')
@@ -476,19 +493,29 @@ const loadMedicines = async () => {
   searchLoading.value = true
   try {
     const params = {
-      keyword: searchForm.keyword,
+      search: searchForm.keyword,
       category: searchForm.category === 'all' ? '' : searchForm.category,
       page: currentPage.value,
-      pageSize: pageSize.value,
-      sort: searchForm.sort
+      limit: pageSize.value,
+      sortBy: 'created_at', // 默认按创建时间排序
+      sortOrder: 'DESC' // 默认降序排序
     }
 
     const result = await medicineAPI.search(params)
-    medicines.value = result.data.list
-    totalMedicines.value = result.data.total
+    // 添加完整的数据结构检查 - 适配后端返回格式 (code: 200, data: [...], pagination: {...})
+    if (result && result.code === 200) {
+      medicines.value = result.data || []
+      totalMedicines.value = result.pagination?.total || 0
+    } else {
+      medicines.value = []
+      totalMedicines.value = 0
+      console.error('药材数据格式错误:', result)
+    }
   } catch (error) {
     console.error('搜索药材失败:', error)
     ElMessage.error('搜索失败')
+    medicines.value = []
+    totalMedicines.value = 0
   } finally {
     searchLoading.value = false
   }
@@ -522,11 +549,17 @@ const resetSearch = () => {
 const viewMedicineDetail = async (medicine) => {
   try {
     const result = await medicineAPI.getDetail(medicine.id)
-    selectedMedicine.value = result.data
-    detailVisible.value = true
+    // 适配后端返回格式 (code: 200, data: {...})
+    if (result && result.code === 200) {
+      selectedMedicine.value = result.data
+      detailVisible.value = true
 
-    // 添加到最近查阅
-    addToRecent(medicine)
+      // 添加到最近查阅
+      addToRecent(medicine)
+    } else {
+      console.error('药材详情数据格式错误:', result)
+      ElMessage.error('获取详情失败')
+    }
   } catch (error) {
     console.error('获取药材详情失败:', error)
     ElMessage.error('获取详情失败')
@@ -570,8 +603,8 @@ const addToPrescription = (medicine) => {
 const showFavorites = async () => {
   try {
     const result = await userAPI.getFavorites()
-    medicines.value = result.data.list
-    totalMedicines.value = result.data.total
+    medicines.value = result.data
+    totalMedicines.value = result.data.length
     activeCategory.value = 'favorites'
     ElMessage.success('显示收藏列表')
   } catch (error) {

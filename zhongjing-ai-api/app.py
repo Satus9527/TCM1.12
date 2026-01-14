@@ -135,14 +135,23 @@ def api_consult(question: str):
 
         start_time = time.time()
         
-        # 判断请求类型
-        if "方剂ID" in question and "辨证为" in question:
+        # 判断请求类型 - 优先判断症状咨询
+        if "症状" in question or "辨证" in question:
+            # 明确的症状咨询请求
+            result = system.recommend_formula(question)
+        elif "发热" in question and "恶寒" in question:
+            # 典型的风寒表证症状
+            result = system.recommend_formula(question)
+        elif "方剂ID" in question and "辨证为" in question:
+            # 包含方剂ID和辨证的请求
             result = system.recommend_formula(question)
         elif "JSON格式" in question or "<JSON_START>" in question or "配伍" in question:
+            # 配伍分析请求
             result = system.analyze_compatibility(question)
         else:
-            # 默认处理 - 根据内容自动判断
-            if "症状" in question or "辨证" in question or "发热" in question or "头痛" in question:
+            # 默认处理 - 根据关键词进一步判断
+            if "头痛" in question or "无汗" in question or "乏力" in question or "食欲不振" in question:
+                # 其他典型症状
                 result = system.recommend_formula(question)
             else:
                 result = system.analyze_compatibility(question)
@@ -150,7 +159,8 @@ def api_consult(question: str):
         processing_time = time.time() - start_time
         
         if result["success"]:
-            return {
+            # 创建基础响应
+            response = {
                 "success": True,
                 "question": question,
                 "answer": result["answer"],
@@ -160,6 +170,18 @@ def api_consult(question: str):
                 "cache_hit": 0,
                 "cache_miss": 0
             }
+            
+            # 如果是推荐结果，添加辨证和方剂信息
+            if "syndrome" in result:
+                response["syndrome"] = result["syndrome"]
+            if "formula_id" in result:
+                response["prescription"] = {
+                    "name": result["formula_id"],
+                    "medicines": [],
+                    "explanation": result["answer"]
+                }
+            
+            return response
         else:
             return {
                 "success": False,

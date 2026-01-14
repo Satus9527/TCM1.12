@@ -17,6 +17,29 @@ const logger = require('../utils/logger');
  */
 function authenticateToken(req, res, next) {
   try {
+    // 开发环境下的测试模式：允许跳过 JWT 验证
+    // 用于测试 Dashboard 和 AI 功能，生产环境会自动关闭
+    if (process.env.NODE_ENV === 'development') {
+      // 检查是否是需要测试的端点
+      const testEndpoints = ['/api/user/stats', '/api/user/info', '/api/consult'];
+      if (testEndpoints.includes(req.originalUrl)) {
+        // 模拟用户信息
+        req.user = {
+          id: 'test_user_1',
+          user_id: 'test_user_1',
+          role: 'student',
+          username: 'student'
+        };
+        
+        logger.debug('开发环境跳过 JWT 验证，使用测试用户', {
+          path: req.originalUrl,
+          testUserId: req.user.id
+        });
+        
+        return next();
+      }
+    }
+
     // 1. 获取 Authorization Header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // 提取 'Bearer <token>' 中的 token

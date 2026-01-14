@@ -12,7 +12,47 @@ class AuthService {
    * @returns {Promise<Object>} 注册成功的用户信息和 token
    */
   async register(userData) {
+      // 添加详细日志
+      console.log('=== 注册请求数据 ===');
+      console.log('userData:', JSON.stringify(userData, null, 2));
+      console.log('username:', userData.username);
+      console.log('password length:', userData.password ? userData.password.length : 0);
+      console.log('role:', userData.role);
+      console.log('email:', userData.email);
+      console.log('phone:', userData.phone);
+      console.log('===================');
+
     const { username, password, role, email, phone } = userData;
+
+    // 验证必填字段
+    if (!username || !username.trim()) {
+      const error = new Error('用户名不能为空');
+      error.statusCode = 400;
+      error.code = 'USERNAME_REQUIRED';
+      throw error;
+    }
+
+    if (!password || !password.trim()) {
+      const error = new Error('密码不能为空');
+      error.statusCode = 400;
+      error.code = 'PASSWORD_REQUIRED';
+      throw error;
+    }
+
+    if (!role) {
+      const error = new Error('角色不能为空');
+      error.statusCode = 400;
+      error.code = 'ROLE_REQUIRED';
+      throw error;
+    }
+
+    // 至少需要邮箱或手机号中的一个
+    if ((!email || !email.trim()) && (!phone || !phone.trim())) {
+      const error = new Error('至少需要提供邮箱或手机号中的一个');
+      error.statusCode = 400;
+      error.code = 'EMAIL_OR_PHONE_REQUIRED';
+      throw error;
+    }
 
     // 检查用户名是否已存在
     const existingUser = await User.findOne({ where: { username } });
@@ -24,7 +64,7 @@ class AuthService {
     }
 
     // 检查邮箱是否已存在（如果提供了邮箱）
-    if (email) {
+    if (email && email.trim()) {
       const existingEmail = await User.findOne({ where: { email } });
       if (existingEmail) {
         const error = new Error('邮箱已被使用');
@@ -34,17 +74,31 @@ class AuthService {
       }
     }
 
+    // 检查手机号是否已存在（如果提供了手机号）
+    if (phone && phone.trim()) {
+      const existingPhone = await User.findOne({ where: { phone } });
+      if (existingPhone) {
+        const error = new Error('手机号已被使用');
+        error.statusCode = 409;
+        error.code = 'PHONE_EXISTS';
+        throw error;
+      }
+    }
+
     // 哈希密码
     const password_hash = await hashPassword(password);
 
-    // 创建用户
-    const user = await User.create({
-      username,
+    // 准备用户数据
+    const userDataToCreate = {
+      username: username.trim(),
       password_hash,
       role,
-      email,
-      phone
-    });
+      email: email && email.trim() ? email.trim() : null, // 如果邮箱为空，设为null
+      phone: phone && phone.trim() ? phone.trim() : null   // 如果手机号为空，设为null
+    };
+
+    // 创建用户
+    const user = await User.create(userDataToCreate);
 
     logger.info('User registered successfully', { userId: user.user_id, username });
 
@@ -83,16 +137,31 @@ class AuthService {
   }
 
   /**
-   * 用户登录
+   * 用户登录 - 支持用户名、邮箱或手机号登录
    * @param {Object} credentials - 登录凭证
-   * @param {string} credentials.username - 用户名（可选）
-   * @param {string} credentials.email - 邮箱（可选）
-   * @param {string} credentials.password - 密码
    * @returns {Promise<Object>} 登录成功的用户信息和 token
    */
-  async login({ username, email, password }) {
-    // 查找用户（支持用户名或邮箱登录）
-    const whereClause = username ? { username } : { email };
+  async login(credentials) {
+    const { username, email, phone, password } = credentials;
+
+    // 至少需要一种身份标识
+    if (!username && !email && !phone) {
+      const error = new Error('请输入用户名、邮箱或手机号');
+      error.statusCode = 400;
+      error.code = 'IDENTIFIER_REQUIRED';
+      throw error;
+    }
+
+    // 构建查询条件
+    let whereClause = {};
+    if (username) {
+      whereClause = { username };
+    } else if (email) {
+      whereClause = { email };
+    } else if (phone) {
+      whereClause = { phone };
+    }
+
     const user = await User.findOne({ where: whereClause });
     if (!user) {
       const error = new Error('用户名或密码错误');
@@ -110,7 +179,7 @@ class AuthService {
       throw error;
     }
 
-    logger.info('User logged in successfully', { userId: user.user_id, username });
+    logger.info('User logged in successfully', { userId: user.user_id, username: user.username });
 
     // 生成 tokens
     const accessToken = generateAccessToken({
@@ -212,8 +281,8 @@ class AuthService {
     logger.info('Access token refreshed', { userId: user.user_id });
 
     return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken
     };
   }
 
@@ -224,7 +293,10 @@ class AuthService {
    */
   async logout(refreshToken) {
     if (!refreshToken) {
-      return;
+      return {
+        success: true,
+        message: '登出成功'
+      };
     }
 
     // 删除 refresh token
@@ -235,6 +307,11 @@ class AuthService {
     if (deleted > 0) {
       logger.info('User logged out successfully');
     }
+
+    return {
+      success: true,
+      message: '登出成功'
+    };
   }
 
   /**
@@ -299,6 +376,84 @@ class AuthService {
     }
 
     return userId;
+  }
+
+  /**
+   * 检查用户名是否可用
+   * @param {string} username - 用户名
+   * @returns {Promise<Object>} 检查结果
+   */
+  async checkUsernameAvailability(username) {
+    if (!username || !username.trim()) {
+      return {
+        success: false,
+        message: '用户名不能为空'
+      };
+    }
+
+    const existingUser = await User.findOne({ where: { username } });
+
+    return {
+      success: true,
+      data: {
+        available: !existingUser,
+        message: existingUser ? '用户名已存在' : '用户名可用'
+      }
+    };
+  }
+
+  /**
+   * 检查邮箱是否可用
+   * @param {string} email - 邮箱
+   * @returns {Promise<Object>} 检查结果
+   */
+  async checkEmailAvailability(email) {
+    if (!email || !email.trim()) {
+      return {
+        success: true,
+        data: {
+          available: true,
+          message: '邮箱可用'
+        }
+      };
+    }
+
+    const existingEmail = await User.findOne({ where: { email } });
+
+    return {
+      success: true,
+      data: {
+        available: !existingEmail,
+        message: existingEmail ? '邮箱已被使用' : '邮箱可用'
+      }
+    };
+  }
+
+  /**
+   * 检查手机号是否可用
+   * @param {string} phone - 手机号
+   * @returns {Promise<Object>} 检查结果
+   */
+  async checkPhoneAvailability(phone) {
+    if (!phone || !phone.trim()) {
+      return {
+        success: true,
+        data: {
+          available: true,
+          message: '手机号可用'
+        }
+      };
+    }
+
+    const existingPhone = await User.findOne({ where: { phone } });
+
+    return {
+      success: true,
+      data: {
+        available: !existingPhone,
+        message: existingPhone ? '手机号已被使用' : '手机号可用'
+      }
+    };
   }
 }
 

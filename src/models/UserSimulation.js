@@ -42,6 +42,16 @@ module.exports = (sequelize, DataTypes) => {
     allowNull: true,
     comment: '用户备注'
   },
+  success: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+    comment: '配伍是否成功'
+  },
+  duration: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: '学习时长（分钟）'
+  },
   created_at: {
     type: DataTypes.DATE,
     allowNull: false,

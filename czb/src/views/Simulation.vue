@@ -390,6 +390,7 @@
       <div class="right-panel ancient-panel">
         <div class="panel-header">
           <h3>分析结果</h3>
+          <el-tag type="info" size="small">AI建议</el-tag>
           <div class="analysis-status" :class="analysisStatus">
             <i class="el-icon-success" v-if="analysisStatus === 'safe'"></i>
             <i class="el-icon-warning" v-if="analysisStatus === 'warning'"></i>
@@ -522,12 +523,14 @@
               </div>
             </div>
           </el-tab-pane>
-        </el-tabs>
-      </div>
 
-      <!-- AI智能咨询组件 -->
-      <div class="right-panel ai-panel ancient-panel">
-        <AIConsultation :onAddToPrescription="handleAddFromAIRecommendation" />
+          <!-- AI智能分析 -->
+          <el-tab-pane label="AI智能分析" name="ai">
+            <div class="ai-analysis-content">
+              <AIConsultation @on-add-to-prescription="handleAddFromAIRecommendation" />
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </div>
     </div>
 
@@ -577,6 +580,9 @@ import AIConsultation from '@/components/AIConsultation.vue'
 
 export default {
   name: 'AncientSimulationRoom',
+  components: {
+    AIConsultation
+  },
   setup() {
     // 响应式数据
     const searchKeyword = ref('')
@@ -919,6 +925,13 @@ export default {
           medicines: prescriptionMedicines.value
         })
 
+        // 增加对象存在性校验，避免undefined读取属性
+        if (!result || !result.data) {
+          console.warn("配伍分析结果数据异常，无法获取分析数据");
+          ElMessage.warning('配伍分析结果数据异常')
+          return
+        }
+
         const analysisData = result.data
         tasteAnalysis.value = analysisData.tasteAnalysis || []
         meridianAnalysis.value = analysisData.meridianAnalysis || []
@@ -999,15 +1012,30 @@ export default {
       loadingMedicines.value = true
       try {
         const [medicinesResult, categoriesResult] = await Promise.all([
-          medicineAPI.search({ pageSize: 100 }),
+          medicineAPI.search({ limit: 100 }),
           medicineAPI.getCategories()
         ])
 
-        allMedicines.value = medicinesResult.data.list
-        categories.value = categoriesResult.data
+        // 添加数据结构检查 - 适配后端返回格式 (code: 200, data: [...])
+        if (medicinesResult && medicinesResult.code === 200) {
+          allMedicines.value = medicinesResult.data || []
+        } else {
+          allMedicines.value = []
+          console.error('药材数据格式错误:', medicinesResult)
+        }
+        
+        if (categoriesResult && categoriesResult.code === 200) {
+          categories.value = categoriesResult.data || []
+        } else {
+          categories.value = []
+          console.error('分类数据格式错误:', categoriesResult)
+        }
       } catch (error) {
         console.error('加载药材失败:', error)
         ElMessage.error('加载药材失败')
+        // 设置默认值，防止页面崩溃
+        allMedicines.value = []
+        categories.value = []
       } finally {
         loadingMedicines.value = false
       }
@@ -1397,9 +1425,9 @@ export default {
     }
 
     .compatibility-visualization {
-      flex: 1;
-      padding: 20px;
+      padding: 10px;
       position: relative;
+      height: auto;
 
       // 移动端圆圈布局
       .mobile-circles-layout {
@@ -1544,21 +1572,22 @@ export default {
       }
 
       .visualization-container {
-        height: 100%;
+        height: auto;
         display: grid;
-        grid-template-rows: 1fr 1fr 1fr 1fr;
-        gap: 20px;
+        grid-template-rows: auto auto auto auto;
+        gap: 5px;
         position: relative;
       }
 
       .medicine-role-area {
         border: 2px dashed #D2B48C;
-        border-radius: 12px;
-        padding: 16px;
+        border-radius: 8px;
+        padding: 8px;
         position: relative;
         background: rgba(255, 255, 255, 0.3);
         transition: all 0.3s ease;
-        min-height: 120px;
+        min-height: 60px;
+        margin-bottom: 5px;
 
         &.drag-over {
           background: rgba(139, 69, 19, 0.1) !important;
@@ -1627,7 +1656,7 @@ export default {
         .medicine-cards {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
+          gap: 8px;
           height: 100%;
           align-items: center;
           justify-content: center;
@@ -1636,9 +1665,9 @@ export default {
         .medicine-card {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
-          border-radius: 20px;
+          gap: 5px;
+          padding: 6px 10px;
+          border-radius: 16px;
           cursor: pointer;
           transition: all 0.3s ease;
           position: relative;
@@ -1752,6 +1781,7 @@ export default {
       :deep(.el-tabs__header) {
         margin: 0;
         background: rgba(255, 255, 255, 0.5);
+        padding-left: 20px; /* 整体向右移动 */
       }
 
       :deep(.el-tabs__content) {

@@ -22,8 +22,9 @@ class MedicineController {
       const result = await medicineService.getMedicines(options);
 
       res.json({
-        success: true,
-        data: result
+        code: 200,
+        data: result.medicines,
+        pagination: result.pagination
       });
     } catch (error) {
       next(error);
@@ -39,7 +40,7 @@ class MedicineController {
       const medicine = await medicineService.getMedicineById(req.params.id);
 
       res.json({
-        success: true,
+        code: 200,
         data: medicine
       });
     } catch (error) {
@@ -56,8 +57,44 @@ class MedicineController {
       const categories = await medicineService.getCategories();
 
       res.json({
-        success: true,
+        code: 200,
         data: categories
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * 获取药材性味选项
+   * GET /api/medicine-properties
+   */
+  async getProperties(req, res, next) {
+    try {
+      // 从数据库中提取所有唯一的性味值
+      const properties = await medicineService.getProperties();
+
+      res.json({
+        code: 200,
+        data: properties
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * 获取药材功效选项
+   * GET /api/medicine-efficacies
+   */
+  async getEfficacies(req, res, next) {
+    try {
+      // 从数据库中提取所有唯一的功效值
+      const efficacies = await medicineService.getEfficacies();
+
+      res.json({
+        code: 200,
+        data: efficacies
       });
     } catch (error) {
       next(error);

@@ -76,6 +76,7 @@
       <div v-if="consultationResult" class="ai-result ancient-panel">
         <div class="result-header">
           <h4>AI咨询结果</h4>
+          <el-tag type="info" size="small">AI建议</el-tag>
           <el-button
             type="text"
             size="small"
@@ -221,11 +222,19 @@ export default {
       try {
         const question = `我的症状是：${symptomForm.symptoms}${symptomForm.tongue ? `，舌象：${symptomForm.tongue}` : ''}${symptomForm.pulse ? `，脉象：${symptomForm.pulse}` : ''}。请辨证并推荐合适的方剂。`
         const result = await aiAPI.consult({ question })
-        consultationResult.value = result
-        ElMessage.success('辨证推荐完成')
+        // 添加数据结构检查 - 适配后端返回格式 (code: 200, data: {...})
+        if (result && result.code === 200) {
+          consultationResult.value = result.data
+          ElMessage.success('辨证推荐完成')
+        } else {
+          consultationResult.value = null
+          console.error('AI咨询结果格式错误:', result)
+          ElMessage.error(result?.message || '辨证推荐失败，请稍后重试')
+        }
       } catch (error) {
         console.error('症状咨询失败:', error)
         ElMessage.error('症状咨询失败，请稍后重试')
+        consultationResult.value = null
       } finally {
         consulting.value = false
       }
@@ -236,11 +245,19 @@ export default {
       consulting.value = true
       try {
         const result = await aiAPI.consult({ question: analysisForm.medicines })
-        consultationResult.value = result
-        ElMessage.success('配伍分析完成')
+        // 添加数据结构检查 - 适配后端返回格式 (code: 200, data: {...})
+        if (result && result.code === 200) {
+          consultationResult.value = result.data
+          ElMessage.success('配伍分析完成')
+        } else {
+          consultationResult.value = null
+          console.error('配伍分析结果格式错误:', result)
+          ElMessage.error(result?.message || '配伍分析失败，请稍后重试')
+        }
       } catch (error) {
         console.error('配伍分析失败:', error)
         ElMessage.error('配伍分析失败，请稍后重试')
+        consultationResult.value = null
       } finally {
         consulting.value = false
       }

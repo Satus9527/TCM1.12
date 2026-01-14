@@ -177,9 +177,11 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { userAPI } from '@/api/user'
+import { prescriptionAPI } from '@/api/prescription'
 
 export default {
   name: 'AncientDashboard',
@@ -188,9 +190,9 @@ export default {
 
     // 用户信息
     const userInfo = ref({
-      name: '张仲景',
+      name: '',
       avatar: '',
-      role: '主任医师'
+      role: ''
     })
 
     // 当前时间
@@ -231,41 +233,89 @@ export default {
       })
     }
 
-    // 加载模拟数据
-    const loadMockData = () => {
+    // 获取用户信息
+    const getUserInfo = async () => {
       try {
-        // 模拟快速统计
+        // 从localStorage获取用户信息
+        const storedInfo = localStorage.getItem('user-info')
+        if (storedInfo) {
+          userInfo.value = JSON.parse(storedInfo)
+        } else {
+          // 如果没有，尝试从API获取
+          const result = await userAPI.getUserInfo()
+          if (result && result.code === 200) {
+            userInfo.value = result.data
+            localStorage.setItem('user-info', JSON.stringify(result.data))
+          }
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+        // 使用默认值
+        userInfo.value = {
+          name: '张仲景',
+          avatar: '',
+          role: '主任医师'
+        }
+      }
+    }
+
+    // 加载数据（模拟环境下使用模拟数据）
+    const loadRealData = async () => {
+      try {
+        // 获取用户信息
+        await getUserInfo()
+
+        // 模拟环境：直接使用模拟数据，避免真实API请求
+        console.log('使用模拟数据加载仪表盘数据')
+
+        // 模拟统计数据
+        const statsData = {
+          prescriptions: 140,
+          favorites: 0,
+          learningHours: 0,
+          medicineCount: 56,
+          medicineTrend: 12,
+          compatibilityRate: 85,
+          rateTrend: 5,
+          learningProgress: 0,
+          progressTrend: 5,
+          medicineChartData: [60, 80, 70, 90, 85, 75, 95, 80, 90, 75, 85, 90],
+          rateChartData: [75, 80, 78, 82, 80, 75, 78, 80, 82, 85, 82, 80],
+          progressChartData: [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]
+        }
+
+        // 构建快速统计
         quickStats.value = [
-          { label: '配伍记录', value: '8', icon: 'ri-book-2-line', color: 'rgba(232,216,185,0.3)' },
-          { label: '收藏内容', value: '23', icon: 'ri-star-line', color: 'rgba(232,216,185,0.3)' },
-          { label: '学习时长', value: '156小时', icon: 'ri-time-line', color: 'rgba(232,216,185,0.3)' }
+          { label: '配伍记录', value: statsData.prescriptions.toString(), icon: 'ri-book-2-line', color: 'rgba(232,216,185,0.3)' },
+          { label: '收藏内容', value: statsData.favorites.toString(), icon: 'ri-star-line', color: 'rgba(232,216,185,0.3)' },
+          { label: '学习时长', value: `${Math.floor(statsData.learningHours / 60)}小时`, icon: 'ri-time-line', color: 'rgba(232,216,185,0.3)' }
         ]
 
-        // 模拟数据概览
+        // 构建数据概览
         statsOverview.value = [
           {
             title: '药材库总量',
-            value: '286',
+            value: statsData.medicineCount.toString(),
             unit: '种',
-            trend: 2.5,
+            trend: statsData.medicineTrend,
             description: '较上月新增7种',
-            chartData: [65, 59, 80, 81, 56, 55, 40]
+            chartData: statsData.medicineChartData
           },
           {
             title: '配伍成功率',
-            value: '94.6',
+            value: statsData.compatibilityRate.toString(),
             unit: '%',
-            trend: 1.3,
+            trend: statsData.rateTrend,
             description: '保持稳定水平',
-            chartData: [85, 82, 90, 94, 93, 95, 94]
+            chartData: statsData.rateChartData
           },
           {
             title: '学习进度',
-            value: '78',
+            value: statsData.learningProgress.toString(),
             unit: '%',
-            trend: 5.2,
+            trend: statsData.progressTrend,
             description: '本周进步明显',
-            chartData: [45, 52, 65, 70, 75, 78, 80]
+            chartData: statsData.progressChartData
           }
         ]
 
@@ -283,7 +333,7 @@ export default {
           { id: 3, title: '收藏了黄芪', time: '2天前', icon: 'ri-star-line', route: '/knowledge' }
         ]
 
-        // 模拟系统状态
+        // 系统状态
         systemStatus.value = [
           { label: '药材库', value: '286 种', percentage: 85, icon: 'ri-database-2-line', color: '#8E7D4E' },
           { label: '配伍规则', value: '1,248 条', percentage: 92, icon: 'ri-settings-4-line', color: '#8E7D4E' },
@@ -298,8 +348,8 @@ export default {
         ]
 
       } catch (error) {
-        console.error('加载模拟数据失败:', error)
-        ElMessage.error('加载模拟数据失败')
+        console.error('加载数据失败:', error)
+        ElMessage.error('加载数据失败')
       }
     }
 
@@ -327,7 +377,7 @@ export default {
     // 生命周期
     onMounted(() => {
       updateTime()
-      loadMockData()
+      loadRealData()
 
       const timer = setInterval(updateTime, 60000)
 

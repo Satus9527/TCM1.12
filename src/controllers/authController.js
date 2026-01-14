@@ -53,8 +53,8 @@ class AuthController {
         });
       }
 
-      const { username, email, password } = req.body;
-      const result = await authService.login({ username, email, password });
+      const { username, email, phone, password } = req.body;
+      const result = await authService.login({ username, email, phone, password });
 
       res.json({
         success: true,

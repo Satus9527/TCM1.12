@@ -70,6 +70,26 @@
                 </el-form-item>
               </div>
 
+              <!-- 角色选择 -->
+              <div class="form-item ancient-style">
+                <div class="input-label">
+                  <i class="el-icon-user"></i>
+                  <span>角色选择</span>
+                </div>
+                <el-form-item prop="role">
+                  <el-select
+                      v-model="registerForm.role"
+                      placeholder="请选择您的角色"
+                      class="ancient-input"
+                      size="large"
+                  >
+                    <el-option label="健康爱好者" value="health_follower"></el-option>
+                    <el-option label="学生" value="student"></el-option>
+                    <el-option label="教师" value="teacher"></el-option>
+                  </el-select>
+                </el-form-item>
+              </div>
+
               <!-- 密码输入 -->
               <div class="form-item ancient-style">
                 <div class="input-label">
@@ -163,6 +183,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { authAPI } from '@/api/auth'
 
 export default {
   name: 'ChineseMedicineRegister',
@@ -175,7 +196,8 @@ export default {
       name: '',
       phone: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      role: ''
     })
 
     const validateConfirmPassword = (rule, value, callback) => {
@@ -197,6 +219,9 @@ export default {
         { required: true, message: '请输入手机号', trigger: 'blur' },
         { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
       ],
+      role: [
+        { required: true, message: '请选择角色', trigger: 'change' }
+      ],
       password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
         { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
@@ -215,10 +240,15 @@ export default {
 
         loading.value = true
 
-        // 模拟注册成功
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        // 调用真实的注册API
+        const response = await authAPI.register({
+          username: registerForm.name,
+          password: registerForm.password,
+          phone: registerForm.phone,
+          role: registerForm.role
+        })
 
-        console.log('注册成功')
+        console.log('注册成功', response)
         ElMessage.success('注册成功！')
 
         // 跳转到登录页面
@@ -228,7 +258,7 @@ export default {
 
       } catch (error) {
         console.error('注册失败:', error)
-        ElMessage.error('注册失败，请检查信息')
+        ElMessage.error(error.response?.data?.error?.message || '注册失败，请检查信息')
       } finally {
         loading.value = false
       }

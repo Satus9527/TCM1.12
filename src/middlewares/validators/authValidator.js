@@ -33,7 +33,7 @@ const registerValidation = [
 
 /**
  * 登录验证规则
- * 支持 username 或 email 登录
+ * 支持 username、email 或 phone 登录
  */
 const loginValidation = [
   body('username')
@@ -49,14 +49,20 @@ const loginValidation = [
     .withMessage('邮箱格式不正确')
     .normalizeEmail(),
   
+  body('phone')
+    .optional()
+    .trim()
+    .matches(/^1[3-9]\d{9}$/)
+    .withMessage('手机号格式不正确'),
+  
   body('password')
     .notEmpty()
     .withMessage('密码不能为空'),
   
-  // 自定义验证：username 或 email 至少提供一个
+  // 自定义验证：username、email 或 phone 至少提供一个
   body().custom((value, { req }) => {
-    if (!req.body.username && !req.body.email) {
-      throw new Error('必须提供用户名或邮箱');
+    if (!req.body.username && !req.body.email && !req.body.phone) {
+      throw new Error('必须提供用户名、邮箱或手机号');
     }
     return true;
   })
