@@ -2,31 +2,114 @@ import request from '@/utils/request'
 
 export const userAPI = {
     // 获取收藏列表
-    getFavorites: (params) => request.get('/content/collections', { params }),
+    getFavorites: (params) => request.get('/api/user/favorites', { params }),
 
     // 添加收藏
-    addFavorite: (data) => request.post('/content/collections', data),
+    addFavorite: (data) => request.post('/api/user/favorites', data),
 
     // 取消收藏
-    removeFavorite: (id) => request.delete(`/content/collections/${id}`),
+    removeFavorite: (id) => request.delete(`/api/user/favorites/${id}`),
 
     // 获取学习记录
-    getLearningHistory: (params) => request.get('/user/learning-history', { params }),
+    getLearningHistory: (params) => request.get('/api/user/learning-history', { params }),
 
     // 添加学习记录
-    addLearningRecord: (data) => request.post('/user/learning-history', data),
+    addLearningRecord: (data) => request.post('/api/user/learning-history', data),
 
     // 获取用户统计
-    getStats: () => request.get('/user/stats'),
-    getUserStats: () => request.get('/user/stats'),
-    
+    getStats: () => request.get('/api/user/stats'),
+
     // 获取用户信息
-    getInfo: () => request.get('/user/info'),
-    getUserInfo: () => request.get('/user/info'),
-    
-    // 获取近期活动
-    getActivities: (params) => request.get('/user/activities', { params }),
-    
-    // 获取今日提示
-    getTips: () => request.get('/user/tips')
+    getInfo: () => request.get('/api/user/info'),
+
+    // 更新用户信息
+    updateInfo: (data) => request.put('/api/user/info', data)
 }
+// import { mockAPI } from '@/mock'
+//
+// export const userAPI = {
+//     // 获取收藏列表
+//     getFavorites: (params) => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     data: {
+//                         list: [],
+//                         total: 0
+//                     }
+//                 })
+//             }, 300)
+//         })
+//     },
+//
+//     // 获取学习记录
+//     getLearningHistory: (params) => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     data: {
+//                         list: []
+//                     }
+//                 })
+//             }, 300)
+//         })
+//     },
+//
+//     // 获取用户统计
+//     getStats: () => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     data: {
+//                         prescriptions: 8,
+//                         favorites: 23,
+//                         learningHours: 156
+//                     }
+//                 })
+//             }, 300)
+//         })
+//     },
+//
+//     // 获取用户信息
+//     getInfo: () => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     data: {
+//                         name: '中医师',
+//                         role: '医师',
+//                         avatar: ''
+//                     }
+//                 })
+//             }, 300)
+//         })
+//     },
+//
+//     // 添加收藏
+//     addFavorite: (data) => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     message: '收藏成功'
+//                 })
+//             }, 300)
+//         })
+//     },
+//
+//     // 取消收藏
+//     removeFavorite: (id) => {
+//         return new Promise((resolve) => {
+//             setTimeout(() => {
+//                 resolve({
+//                     code: 200,
+//                     message: '取消收藏成功'
+//                 })
+//             }, 300)
+//         })
+//     }
+// }

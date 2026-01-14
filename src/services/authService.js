@@ -124,21 +124,29 @@ class AuthService {
     });
 
     return {
-      user: {
-        user_id: user.user_id,
-        username: user.username,
-        role: user.role,
-        email: user.email,
-        phone: user.phone
-      },
-      access_token: accessToken,
-      refresh_token: refreshToken
+      success: true,
+      message: '注册成功',
+      data: {
+        user: {
+          user_id: user.user_id,
+          username: user.username,
+          role: user.role,
+          email: user.email,
+          phone: user.phone
+        },
+        access_token: accessToken,
+        refresh_token: refreshToken
+      }
     };
   }
 
   /**
    * 用户登录 - 支持用户名、邮箱或手机号登录
    * @param {Object} credentials - 登录凭证
+   * @param {string} credentials.username - 用户名（可选）
+   * @param {string} credentials.email - 邮箱（可选）
+   * @param {string} credentials.phone - 手机号（可选）
+   * @param {string} credentials.password - 密码
    * @returns {Promise<Object>} 登录成功的用户信息和 token
    */
   async login(credentials) {
@@ -208,16 +216,20 @@ class AuthService {
     });
 
     return {
-      user: {
-        user_id: user.user_id,
-        username: user.username,
-        role: user.role,
-        email: user.email,
-        phone: user.phone,
-        avatar_url: user.avatar_url
-      },
-      access_token: accessToken,
-      refresh_token: refreshToken
+      success: true,
+      message: '登录成功',
+      data: {
+        user: {
+          user_id: user.user_id,
+          username: user.username,
+          role: user.role,
+          email: user.email,
+          phone: user.phone,
+          avatar_url: user.avatar_url
+        },
+        access_token: accessToken,
+        refresh_token: refreshToken
+      }
     };
   }
 
@@ -281,8 +293,11 @@ class AuthService {
     logger.info('Access token refreshed', { userId: user.user_id });
 
     return {
-      access_token: newAccessToken,
-      refresh_token: newRefreshToken
+      success: true,
+      data: {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken
+      }
     };
   }
 
@@ -331,7 +346,10 @@ class AuthService {
       throw error;
     }
 
-    return user;
+    return {
+      success: true,
+      data: user
+    };
   }
 
   /**
@@ -458,4 +476,3 @@ class AuthService {
 }
 
 module.exports = new AuthService();
-

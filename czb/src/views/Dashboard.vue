@@ -179,222 +179,293 @@
 <script>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
-import { userAPI } from '@/api/user'
-import { prescriptionAPI } from '@/api/prescription'
+import { userAPI, prescriptionAPI } from '@/api'  // 确保导入正确的 API
 
 export default {
   name: 'AncientDashboard',
   setup() {
     const router = useRouter()
+    const store = useStore()
 
     // 用户信息
-    const userInfo = ref({
-      name: '',
-      avatar: '',
-      role: ''
+    const userInfo = computed(() => {
+      // 先从 store 获取
+      const storeUser = store.state.user || {}
+      if (storeUser.username) {
+        return storeUser
+      }
+
+      // 如果 store 中没有，从 localStorage 获取
+      try {
+        const localUser = JSON.parse(localStorage.getItem('user') || '{}')
+        return localUser
+      } catch (e) {
+        console.error('读取用户信息失败:', e)
+        return {}
+      }
     })
 
-    // 当前时间
-    const currentTime = ref('')
+    // 当前时间（友好问候）
+    const currentTime = computed(() => {
+      const now = new Date()
+      const hour = now.getHours()
+      if (hour < 6) return '凌晨好'
+      if (hour < 9) return '早上好'
+      if (hour < 12) return '上午好'
+      if (hour < 14) return '中午好'
+      if (hour < 18) return '下午好'
+      return '晚上好'
+    })
 
-    // 快捷操作
-    const quickActions = ref([
-      { name: '智能配伍', desc: '创建新处方', icon: 'ri-cpu-line', color: '#8E7D4E', route: '/simulation' },
-      { name: '知识库', desc: '查阅药材信息', icon: 'ri-book-2-line', color: '#8E7D4E', route: '/knowledge' },
-      { name: '个人中心', desc: '管理个人内容', icon: 'ri-user-line', color: '#8E7D4E', route: '/content' },
-      { name: '学习记录', desc: '查看学习历史', icon: 'ri-time-line', color: '#8E7D4E', route: '/content' }
+    // 当前具体时间（HH:MM）
+    const currentHourMinute = ref('')
+
+    // 快速统计数据
+    const quickStats = ref([
+      { label: '配伍记录', value: '0', icon: 'ri-book-2-line', color: 'rgba(232,216,185,0.3)' },
+      { label: '收藏内容', value: '0', icon: 'ri-star-line', color: 'rgba(232,216,185,0.3)' },
+      { label: '学习时长', value: '0小时', icon: 'ri-time-line', color: 'rgba(232,216,185,0.3)' }
     ])
 
-    // 快速统计
-    const quickStats = ref([])
+    // 快速操作 - 添加上这些变量
+    const quickActions = ref([
+      { name: '开始模拟', desc: '进行中药配伍模拟', icon: 'ri-play-circle-line', color: '#8E7D4E' },
+      { name: '知识库', desc: '查看中药知识', icon: 'ri-book-open-line', color: '#52734D' },
+      { name: '我的收藏', desc: '查看收藏内容', icon: 'ri-heart-line', color: '#A62F00' },
+      { name: '学习记录', desc: '查看学习进度', icon: 'ri-history-line', color: '#5A4A27' }
+    ])
 
-    // 最近活动
-    const recentActivities = ref([])
+    // 最近活动 - 添加上这些变量
+    const recentActivities = ref([
+      { id: 1, title: '暂无最近活动', time: '-', icon: 'ri-time-line' }
+    ])
 
-    // 数据概览
-    const statsOverview = ref([])
-
-    // 配伍记录
-    const compatibilityRecords = ref([])
-
-    // 系统状态
-    const systemStatus = ref([])
-
-    // 今日提示
-    const dailyTips = ref([])
-
-    // 更新时间
-    const updateTime = () => {
-      const now = new Date()
-      currentTime.value = now.toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
-
-    // 获取用户信息
-    const getUserInfo = async () => {
-      try {
-        // 从localStorage获取用户信息
-        const storedInfo = localStorage.getItem('user-info')
-        if (storedInfo) {
-          userInfo.value = JSON.parse(storedInfo)
-        } else {
-          // 如果没有，尝试从API获取
-          const result = await userAPI.getUserInfo()
-          if (result && result.code === 200) {
-            userInfo.value = result.data
-            localStorage.setItem('user-info', JSON.stringify(result.data))
-          }
-        }
-      } catch (error) {
-        console.error('获取用户信息失败:', error)
-        // 使用默认值
-        userInfo.value = {
-          name: '张仲景',
-          avatar: '',
-          role: '主任医师'
-        }
+    // 数据概览 - 添加上这些变量
+    const statsOverview = ref([
+      {
+        title: '药材库总量',
+        value: '0',
+        unit: '种',
+        trend: 0,
+        description: '暂无数据',
+        chartData: [30, 40, 50, 60, 70, 80, 90]
+      },
+      {
+        title: '配伍成功率',
+        value: '0',
+        unit: '%',
+        trend: 0,
+        description: '暂无数据',
+        chartData: [65, 70, 75, 80, 85, 90, 95]
+      },
+      {
+        title: '学习进度',
+        value: '0',
+        unit: '%',
+        trend: 0,
+        description: '暂无数据',
+        chartData: [20, 30, 40, 50, 60, 70, 80]
       }
-    }
+    ])
 
-    // 加载数据（模拟环境下使用模拟数据）
-    const loadRealData = async () => {
-      try {
-        // 获取用户信息
-        await getUserInfo()
+    // 配伍记录 - 添加上这些变量
+    const compatibilityRecords = ref([
+      { id: 1, name: '暂无配伍记录', description: '请开始您的第一次配伍模拟', time: '-', status: 'warning' }
+    ])
 
-        // 模拟环境：直接使用模拟数据，避免真实API请求
-        console.log('使用模拟数据加载仪表盘数据')
+    // 每日提示 - 添加上这些变量
+    const dailyTips = ref([
+      { type: 'info', icon: 'ri-information-line', text: '欢迎使用中医智慧平台！' },
+      { type: 'success', icon: 'ri-checkbox-circle-line', text: '建议先完成新手引导' },
+      { type: 'warning', icon: 'ri-alert-line', text: '麻黄与桂枝存在配伍禁忌' }
+    ])
 
-        // 模拟统计数据
-        const statsData = {
-          prescriptions: 140,
-          favorites: 0,
-          learningHours: 0,
-          medicineCount: 56,
-          medicineTrend: 12,
-          compatibilityRate: 85,
-          rateTrend: 5,
-          learningProgress: 0,
-          progressTrend: 5,
-          medicineChartData: [60, 80, 70, 90, 85, 75, 95, 80, 90, 75, 85, 90],
-          rateChartData: [75, 80, 78, 82, 80, 75, 78, 80, 82, 85, 82, 80],
-          progressChartData: [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]
-        }
+    // 系统状态（暂时不用，可以注释掉）
+    // const systemStatus = ref([])
 
-        // 构建快速统计
-        quickStats.value = [
-          { label: '配伍记录', value: statsData.prescriptions.toString(), icon: 'ri-book-2-line', color: 'rgba(232,216,185,0.3)' },
-          { label: '收藏内容', value: statsData.favorites.toString(), icon: 'ri-star-line', color: 'rgba(232,216,185,0.3)' },
-          { label: '学习时长', value: `${Math.floor(statsData.learningHours / 60)}小时`, icon: 'ri-time-line', color: 'rgba(232,216,185,0.3)' }
-        ]
-
-        // 构建数据概览
-        statsOverview.value = [
-          {
-            title: '药材库总量',
-            value: statsData.medicineCount.toString(),
-            unit: '种',
-            trend: statsData.medicineTrend,
-            description: '较上月新增7种',
-            chartData: statsData.medicineChartData
-          },
-          {
-            title: '配伍成功率',
-            value: statsData.compatibilityRate.toString(),
-            unit: '%',
-            trend: statsData.rateTrend,
-            description: '保持稳定水平',
-            chartData: statsData.rateChartData
-          },
-          {
-            title: '学习进度',
-            value: statsData.learningProgress.toString(),
-            unit: '%',
-            trend: statsData.progressTrend,
-            description: '本周进步明显',
-            chartData: statsData.progressChartData
-          }
-        ]
-
-        // 模拟配伍记录
-        compatibilityRecords.value = [
-          { id: 1, name: '补气养血方', description: '益气补血，调理身体', time: '2024-01-15', status: 'success' },
-          { id: 2, name: '清热解毒汤', description: '清热祛湿，解毒消肿', time: '2024-01-14', status: 'warning' },
-          { id: 3, name: '安神助眠散', description: '安神定志，改善睡眠', time: '2024-01-13', status: 'success' }
-        ]
-
-        // 模拟最近活动
-        recentActivities.value = [
-          { id: 1, title: '查看了人参详情', time: '2小时前', icon: 'ri-search-line', route: '/knowledge' },
-          { id: 2, title: '创建了新处方', time: '1天前', icon: 'ri-file-text-line', route: '/simulation' },
-          { id: 3, title: '收藏了黄芪', time: '2天前', icon: 'ri-star-line', route: '/knowledge' }
-        ]
-
-        // 系统状态
-        systemStatus.value = [
-          { label: '药材库', value: '286 种', percentage: 85, icon: 'ri-database-2-line', color: '#8E7D4E' },
-          { label: '配伍规则', value: '1,248 条', percentage: 92, icon: 'ri-settings-4-line', color: '#8E7D4E' },
-          { label: '学习资源', value: '156 个', percentage: 78, icon: 'ri-book-open-line', color: '#8E7D4E' }
-        ]
-
-        // 模拟今日提示
-        dailyTips.value = [
-          { type: 'success', icon: 'ri-sun-line', text: '今日宜研究补气类药材配伍' },
-          { type: 'warning', icon: 'ri-moon-line', text: '注意：孕妇慎用活血化瘀药材' },
-          { type: 'info', icon: 'ri-star-line', text: '推荐学习：四君子汤的现代应用' }
-        ]
-
-      } catch (error) {
-        console.error('加载数据失败:', error)
-        ElMessage.error('加载数据失败')
-      }
-    }
-
-    // 处理方法
+    // 处理方法 - 添加这些函数
     const handleAction = (action) => {
-      if (action.route) {
-        router.push(action.route)
+      console.log('执行操作:', action.name)
+      ElMessage.info(`正在进入${action.name}`)
+
+      if (action.name === '开始模拟') {
+        router.push('/simulation')
+      } else if (action.name === '知识库') {
+        router.push('/knowledge')
+      } else if (action.name === '我的收藏') {
+        router.push('/collection')
+      } else if (action.name === '学习记录') {
+        router.push('/content')
       }
     }
 
     const handleActivity = (activity) => {
-      if (activity.route) {
-        router.push(activity.route)
-      }
+      console.log('查看活动:', activity.title)
+      ElMessage.info(`查看活动: ${activity.title}`)
     }
 
     const viewAllRecords = () => {
-      router.push('/simulation')
+      console.log('查看所有记录')
+      router.push('/records')
     }
 
     const viewRecordDetail = (record) => {
+      console.log('查看记录详情:', record.name)
       ElMessage.info(`查看记录: ${record.name}`)
     }
 
-    // 生命周期
+    // 更新时间函数
+    const updateCurrentTime = () => {
+      const now = new Date()
+      const hour = now.getHours().toString().padStart(2, '0')
+      const minute = now.getMinutes().toString().padStart(2, '0')
+      currentHourMinute.value = `${hour}:${minute}`
+    }
+
+    // 加载用户信息的简化版本（确保有数据）
+    const loadUserInfo = async () => {
+      try {
+        // 先尝试从 API 获取
+        if (userAPI && typeof userAPI.getInfo === 'function') {
+          const response = await userAPI.getInfo()
+          if (response.code === 200) {
+            // 如果有新数据，更新 store 和 localStorage
+            store.commit('setUser', response.data)
+            localStorage.setItem('user', JSON.stringify(response.data))
+          }
+        }
+      } catch (error) {
+        console.warn('获取用户信息失败，使用缓存数据:', error)
+        // 使用缓存的数据
+      }
+    }
+
+    // 加载统计数据
+    const loadStats = async () => {
+      try {
+        // 如果 API 可用，调用 API
+        if (userAPI && typeof userAPI.getStats === 'function') {
+          const response = await userAPI.getStats()
+          if (response.code === 200 && response.data) {
+            const statsData = response.data
+
+            // 更新快速统计
+            quickStats.value = [
+              {
+                label: '配伍记录',
+                value: statsData.prescriptions || '0',
+                icon: 'ri-book-2-line',
+                color: 'rgba(232,216,185,0.3)'
+              },
+              {
+                label: '收藏内容',
+                value: statsData.favorites || '0',
+                icon: 'ri-star-line',
+                color: 'rgba(232,216,185,0.3)'
+              },
+              {
+                label: '学习时长',
+                value: `${statsData.learningHours || 0}小时`,
+                icon: 'ri-time-line',
+                color: 'rgba(232,216,185,0.3)'
+              }
+            ]
+
+            // 更新数据概览
+            statsOverview.value = [
+              {
+                title: '药材库总量',
+                value: statsData.medicineCount || '0',
+                unit: '种',
+                trend: statsData.medicineTrend || 0,
+                description: '较上月新增',
+                chartData: statsData.medicineChartData || [30, 40, 50, 60, 70, 80, 90]
+              },
+              {
+                title: '配伍成功率',
+                value: statsData.compatibilityRate || '0',
+                unit: '%',
+                trend: statsData.rateTrend || 0,
+                description: '保持稳定水平',
+                chartData: statsData.rateChartData || [65, 70, 75, 80, 85, 90, 95]
+              },
+              {
+                title: '学习进度',
+                value: statsData.learningProgress || '0',
+                unit: '%',
+                trend: statsData.progressTrend || 0,
+                description: '本周进步明显',
+                chartData: statsData.progressChartData || [20, 30, 40, 50, 60, 70, 80]
+              }
+            ]
+          }
+        }
+      } catch (error) {
+        console.warn('加载统计数据失败:', error)
+        // 保持默认值
+      }
+    }
+
+    // 初始化加载数据
+    const initData = async () => {
+      try {
+        await loadUserInfo()
+        await loadStats()
+      } catch (error) {
+        console.error('初始化数据失败:', error)
+        // 不影响页面显示
+      }
+    }
+
+    // 定时器用于更新时间
+    let timeInterval
+
     onMounted(() => {
-      updateTime()
-      loadRealData()
+      console.log('Dashboard 组件已加载')
+      console.log('当前用户信息:', userInfo.value)
 
-      const timer = setInterval(updateTime, 60000)
+      // 检查用户是否登录
+      if (!userInfo.value.user_id) {
+        ElMessage.warning('请先登录')
+        router.push('/login')
+        return
+      }
 
+      // 初始化数据
+      initData()
+
+      // 更新时间
+      updateCurrentTime()
+      timeInterval = setInterval(updateCurrentTime, 60000) // 每分钟更新一次
+
+      // 每分钟检查一次登录状态
+      const checkLoginInterval = setInterval(() => {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          ElMessage.warning('登录已过期，请重新登录')
+          router.push('/login')
+          clearInterval(checkLoginInterval)
+        }
+      }, 60000)
+
+      // 清理定时器
       return () => {
-        clearInterval(timer)
+        if (timeInterval) clearInterval(timeInterval)
+        if (checkLoginInterval) clearInterval(checkLoginInterval)
       }
     })
 
     return {
       userInfo,
       currentTime,
+      currentHourMinute,
       quickStats,
       quickActions,
       recentActivities,
       statsOverview,
       compatibilityRecords,
-      systemStatus,
       dailyTips,
       handleAction,
       handleActivity,

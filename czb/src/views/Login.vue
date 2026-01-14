@@ -140,6 +140,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { authAPI } from '@/api/index.js'  // 添加导入
 
 export default {
   name: 'ChineseMedicineLogin',
@@ -164,8 +165,6 @@ export default {
       ]
     }
 
-
-    // 在登录页面的 script 部分添加
     const goToRegister = () => {
       router.push('/register')
     }
@@ -179,39 +178,76 @@ export default {
 
         loading.value = true
 
-        // 模拟登录成功
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('开始真实登录...')
+        console.log('登录前 localStorage 状态:', {
+          token: localStorage.getItem('token'),
+          user: localStorage.getItem('user')
+        })
 
-        const userInfo = {
-          username: loginForm.username || 'demo-user',
-          name: loginForm.username || '中医师',
-          role: '医师',
-          avatar: ''
+        // 调用真实登录接口
+        const loginResponse = await authAPI.login({
+          username: loginForm.username.trim(),
+          password: loginForm.password
+        })
+
+        console.log('登录响应:', loginResponse)
+        console.log('完整的登录响应数据:', JSON.stringify(loginResponse, null, 2))
+
+        // 根据日志，正确的路径是：loginResponse.data.data.access_token
+        const token = loginResponse.data?.data?.access_token
+
+        console.log('获取到的token:', token ? token.substring(0, 20) + '...' : 'null')
+
+        if (token) {
+          localStorage.setItem('token', token)
+          console.log('保存token到localStorage后立即读取:', localStorage.getItem('token')?.substring(0, 20) + '...')
+        } else {
+          console.error('token为空！响应结构:', loginResponse)
+          ElMessage.error('登录失败：未获取到token')
+          return
         }
 
-        console.log('开始执行登录...')
+        // 保存refresh token
+        const refreshToken = loginResponse.data?.data?.refresh_token
+        if (refreshToken) {
+          localStorage.setItem('refresh_token', refreshToken)
+        }
 
-        // 保存到 store
-        await store.dispatch('login', userInfo)
+        // 保存用户信息
+        const userInfo = loginResponse.data?.data?.user
+        console.log('用户信息:', userInfo)
+        if (userInfo) {
+          localStorage.setItem('user', JSON.stringify(userInfo))
+          console.log('保存用户信息后立即读取:', localStorage.getItem('user'))
+          // 更新store
+          await store.dispatch('login', userInfo)
+        }
 
-        console.log('登录成功，准备跳转...')
         ElMessage.success('登录成功！')
 
-        // 确保跳转执行
-        setTimeout(() => {
-          console.log('执行路由跳转到 /dashboard')
-          router.push('/dashboard').then(() => {
-            console.log('路由跳转成功')
-          }).catch(err => {
-            console.error('路由跳转失败:', err)
-            // 如果路由跳转失败，尝试强制刷新
-            window.location.href = '/dashboard'
-          })
-        }, 100)
+        // 等待一小段时间确保状态已保存
+        await new Promise(resolve => setTimeout(resolve, 50))
 
+        console.log('跳转前最终的localStorage状态:', {
+          token: localStorage.getItem('token'),
+          user: localStorage.getItem('user')
+        })
+
+        // 跳转到首页
+        console.log('执行路由跳转到 /dashboard')
+        router.push('/dashboard').catch(err => {
+          console.error('路由跳转失败:', err)
+          // 如果路由跳转失败，尝试强制刷新
+          window.location.href = '/dashboard'
+        })
       } catch (error) {
         console.error('登录失败:', error)
-        ElMessage.error('登录失败，请检查账号密码')
+        if (error.response) {
+          console.error('登录失败详情:', error.response.data)
+          ElMessage.error(error.response.data?.message || '登录失败，请检查账号密码')
+        } else {
+          ElMessage.error('网络错误，请稍后重试')
+        }
       } finally {
         loading.value = false
       }
@@ -258,8 +294,8 @@ export default {
     onMounted(() => {
       console.log('Login component mounted')
 
-      // 检查是否已登录
-      const token = localStorage.getItem('user-token')
+      // 检查是否已登录 - 使用正确的键名
+      const token = localStorage.getItem('token')
       if (token) {
         console.log('已登录，自动跳转到首页')
         router.push('/dashboard')

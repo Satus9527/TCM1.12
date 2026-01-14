@@ -50,6 +50,26 @@
                 </el-form-item>
               </div>
 
+              <!-- 邮箱输入 -->
+              <div class="form-item ancient-style">
+                <div class="input-label">
+                  <i class="el-icon-message"></i>
+                  <span>邮箱</span>
+                </div>
+                <el-form-item prop="email">
+                  <el-input
+                      v-model="registerForm.email"
+                      placeholder="请输入您的邮箱"
+                      class="ancient-input"
+                      size="large"
+                  >
+                    <template #prefix>
+                      <i class="el-icon-message ancient-icon"></i>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
+
               <!-- 账号输入 -->
               <div class="form-item ancient-style">
                 <div class="input-label">
@@ -67,26 +87,6 @@
                       <i class="el-icon-mobile-phone ancient-icon"></i>
                     </template>
                   </el-input>
-                </el-form-item>
-              </div>
-
-              <!-- 角色选择 -->
-              <div class="form-item ancient-style">
-                <div class="input-label">
-                  <i class="el-icon-user"></i>
-                  <span>角色选择</span>
-                </div>
-                <el-form-item prop="role">
-                  <el-select
-                      v-model="registerForm.role"
-                      placeholder="请选择您的角色"
-                      class="ancient-input"
-                      size="large"
-                  >
-                    <el-option label="健康爱好者" value="health_follower"></el-option>
-                    <el-option label="学生" value="student"></el-option>
-                    <el-option label="教师" value="teacher"></el-option>
-                  </el-select>
                 </el-form-item>
               </div>
 
@@ -131,6 +131,21 @@
                       <i class="el-icon-check ancient-icon"></i>
                     </template>
                   </el-input>
+                </el-form-item>
+              </div>
+
+              <!-- 角色选择 -->
+              <div class="form-item ancient-style">
+                <div class="input-label">
+                  <i class="el-icon-s-custom"></i>
+                  <span>角色</span>
+                </div>
+                <el-form-item prop="role">
+                  <el-radio-group v-model="registerForm.role" class="role-radio-group">
+                    <el-radio label="health_follower">健康爱好者</el-radio>
+                    <el-radio label="student">学生</el-radio>
+                    <el-radio label="teacher">教师</el-radio>
+                  </el-radio-group>
                 </el-form-item>
               </div>
 
@@ -181,24 +196,18 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter,useStore } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { authAPI } from '@/api/auth'
+import {authAPI} from "@/api/index.js";
 
 export default {
   name: 'ChineseMedicineRegister',
   setup() {
     const router = useRouter()
+    const store = useStore()
     const registerFormRef = ref(null)
     const loading = ref(false)
 
-    const registerForm = reactive({
-      name: '',
-      phone: '',
-      password: '',
-      confirmPassword: '',
-      role: ''
-    })
 
     const validateConfirmPassword = (rule, value, callback) => {
       if (value === '') {
@@ -210,17 +219,32 @@ export default {
       }
     }
 
+    const registerForm = reactive({
+      name: '',
+      phone: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'health_follower' // 默认选择健康爱好者
+    })
+
     const registerRules = {
       name: [
         { required: true, message: '请输入昵称', trigger: 'blur' },
-        { min: 1, max: 10, message: '昵称长度在 1 到 10 个字符', trigger: 'blur' }
+        { min: 3, max: 20, message: '昵称长度在 3 到 20 个字符，只能包含字母、数字和下划线', trigger: 'blur' },
+        {
+          pattern: /^[a-zA-Z0-9_]+$/,
+          message: '昵称只能包含字母、数字和下划线',
+          trigger: 'blur'
+        }
+      ],
+      email: [
+        { required: true, message: '请输入邮箱', trigger: 'blur' },
+        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
       ],
       phone: [
         { required: true, message: '请输入手机号', trigger: 'blur' },
         { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-      ],
-      role: [
-        { required: true, message: '请选择角色', trigger: 'change' }
       ],
       password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
@@ -228,6 +252,9 @@ export default {
       ],
       confirmPassword: [
         { required: true, validator: validateConfirmPassword, trigger: 'blur' }
+      ],
+      role: [
+        { required: true, message: '请选择角色', trigger: 'change' }
       ]
     }
 
@@ -240,25 +267,85 @@ export default {
 
         loading.value = true
 
-        // 调用真实的注册API
-        const response = await authAPI.register({
-          username: registerForm.name,
+        console.log('=== 开始注册 ===')
+        console.log('表单数据:', registerForm)
+        console.log('当前时间:', new Date().toISOString())
+
+        // 准备注册数据 - 使用用户输入的邮箱
+        const registerData = {
+          username: registerForm.name.trim(),
           password: registerForm.password,
-          phone: registerForm.phone,
-          role: registerForm.role
-        })
+          role: registerForm.role,
+          phone: registerForm.phone.trim(),
+          email: registerForm.email.trim()
+        }
 
-        console.log('注册成功', response)
-        ElMessage.success('注册成功！')
+        console.log('发送的注册数据:', JSON.stringify(registerData, null, 2))
 
-        // 跳转到登录页面
-        setTimeout(() => {
-          router.push('/login')
-        }, 1000)
+        // 调用注册接口
+        const response = await authAPI.register(registerData)
 
+        console.log('注册响应:', response)
+
+        // 根据后端响应格式调整判断条件
+        if (response.success === true || response.code === 200 || response.code === 201) {
+          ElMessage.success('注册成功！')
+
+          // 直接使用注册返回的token，不要再次登录！
+          console.log('完整的注册响应:', response)
+
+          // 保存token到localStorage
+          const token = response.data?.access_token || response.access_token
+          const userInfo = response.data?.user || response.user
+
+          if (token) {
+            localStorage.setItem('token', token)
+            console.log('Token已保存到localStorage:', token.substring(0, 20) + '...')
+          }
+
+          if (response.data?.refresh_token) {
+            localStorage.setItem('refresh_token', response.data.refresh_token)
+          }
+
+          if (userInfo) {
+            localStorage.setItem('user', JSON.stringify(userInfo))
+            console.log('用户信息已保存:', userInfo)
+
+            // 使用 setup 函数中定义的 store
+            store.commit('setUser', userInfo)
+            store.commit('setLoggedIn', true)
+            console.log('Store状态已更新')
+          }
+
+          ElMessage.success('注册成功！正在跳转到首页...')
+
+          // 直接跳转到首页，不使用自动登录
+          setTimeout(() => {
+            console.log('跳转到首页...')
+            router.push('/dashboard')
+          }, 1000)
+        } else {
+          ElMessage.error(response.message || '注册失败')
+        }
       } catch (error) {
-        console.error('注册失败:', error)
-        ElMessage.error(error.response?.data?.error?.message || '注册失败，请检查信息')
+        console.error('=== 注册失败详情 ===')
+        console.error('错误对象:', error)
+
+        if (error.response) {
+          console.error('响应状态:', error.response.status)
+          console.error('响应数据:', error.response.data)
+
+          if (error.response.status === 400) {
+            const errorData = error.response.data
+            if (errorData && errorData.message) {
+              ElMessage.error(`注册失败: ${errorData.message}`)
+            } else if (errorData && errorData.error) {
+              ElMessage.error(`注册失败: ${errorData.error.message || errorData.error}`)
+            }
+          } else if (error.response.status === 409) {
+            ElMessage.error('用户名、手机号或邮箱已被注册')
+          }
+        }
       } finally {
         loading.value = false
       }
@@ -510,6 +597,33 @@ export default {
     }
   }
 
+  .role-radio-group {
+    width: 100%;
+    padding: 8px 0;
+
+    :deep(.el-radio) {
+      margin-right: 20px;
+      color: #8B4513;
+    }
+
+    :deep(.el-radio__inner) {
+      border-color: #D2B48C;
+
+      &:hover {
+        border-color: #8B4513;
+      }
+    }
+
+    :deep(.el-radio__input.is-checked .el-radio__inner) {
+      background-color: #8B4513;
+      border-color: #8B4513;
+    }
+
+    :deep(.el-radio__input.is-checked + .el-radio__label) {
+      color: #8B4513;
+      font-weight: bold;
+    }
+  }
   // 页脚
   .register-footer {
     margin-top: 40px;
